@@ -10,7 +10,7 @@
 
 #	if BGFX_USE_GLX
 #		define GLX_GLXEXT_PROTOTYPES
-#		include <glx/glxext.h>
+#		include <GL/glxext.h>
 
 // will include X11 which #defines None...
 #undef None
