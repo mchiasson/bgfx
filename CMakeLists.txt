@@ -11,9 +11,36 @@ HunterGate(
     LOCAL
 )
 
+option(BGFX_BUILD_EXAMPLES "Build Examples" OFF)
+
 project(bgfx VERSION 1.0.0)
 
-add_library(bgfx src/amalgamated.cpp)
+################################################################################
+# BGFX Library
+################################################################################
+
+add_library(bgfx
+    src/bgfx.cpp
+    src/debug_renderdoc.cpp
+    src/dxgi.cpp
+    src/glcontext_egl.cpp
+    src/glcontext_glx.cpp
+    src/glcontext_wgl.cpp
+    src/nvapi.cpp
+    src/renderer_d3d11.cpp
+    src/renderer_d3d12.cpp
+    src/renderer_d3d9.cpp
+    src/renderer_gl.cpp
+    src/renderer_gnm.cpp
+    src/renderer_noop.cpp
+    src/renderer_vk.cpp
+    src/shader.cpp
+    src/shader_dx9bc.cpp
+    src/shader_dxbc.cpp
+    src/shader_spirv.cpp
+    src/topology.cpp
+    src/vertexdecl.cpp
+)
 
 target_include_directories(bgfx
     PUBLIC
@@ -22,6 +49,7 @@ target_include_directories(bgfx
     PRIVATE
         src
         3rdparty
+        3rdparty/khronos
 )
 
 hunter_add_package(bimg)
@@ -31,51 +59,72 @@ find_package(bimg CONFIG REQUIRED)
 find_package(bx CONFIG REQUIRED)
 find_package(OpenGL)
 find_package(Vulkan)
+find_package(X11)
 
-target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx)
+target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx ${X11_LIBRARIES})
 
 if(TARGET Vulkan::Vulkan)
-    target_compile_definitions(bgfx PUBLIC
-        BGFX_CONFIG_RENDERER_DIRECT3D9=0
-        BGFX_CONFIG_RENDERER_DIRECT3D11=0
-        BGFX_CONFIG_RENDERER_DIRECT3D12=0
-        BGFX_CONFIG_RENDERER_METAL=0
-        BGFX_CONFIG_RENDERER_OPENGL=0
-        BGFX_CONFIG_RENDERER_OPENGLES=0
-        BGFX_CONFIG_RENDERER_VULKAN=1
-        BGFX_CONFIG_RENDERER_GNM=0
-    )
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_VULKAN=1)
     target_link_libraries(bgfx PUBLIC Vulkan::Vulkan)
 elseif(TARGET OpenGL::OpenGL)
-    target_compile_definitions(bgfx PUBLIC
-        BGFX_CONFIG_RENDERER_DIRECT3D9=0
-        BGFX_CONFIG_RENDERER_DIRECT3D11=0
-        BGFX_CONFIG_RENDERER_DIRECT3D12=0
-        BGFX_CONFIG_RENDERER_METAL=0
-        BGFX_CONFIG_RENDERER_OPENGL=1
-        BGFX_CONFIG_RENDERER_OPENGLES=0
-        BGFX_CONFIG_RENDERER_VULKAN=0
-        BGFX_CONFIG_RENDERER_GNM=0
-    )
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
     target_link_libraries(bgfx PUBLIC OpenGL::OpenGL)
 elseif(TARGET OpenGL::GL)
-    target_compile_definitions(bgfx PUBLIC
-        BGFX_CONFIG_RENDERER_DIRECT3D9=0
-        BGFX_CONFIG_RENDERER_DIRECT3D11=0
-        BGFX_CONFIG_RENDERER_DIRECT3D12=0
-        BGFX_CONFIG_RENDERER_METAL=0
-        BGFX_CONFIG_RENDERER_OPENGL=1
-        BGFX_CONFIG_RENDERER_OPENGLES=0
-        BGFX_CONFIG_RENDERER_VULKAN=0
-        BGFX_CONFIG_RENDERER_GNM=0
-    )
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
     target_link_libraries(bgfx PUBLIC OpenGL::GL)
+endif()
+
+if(TARGET OpenGL::GLX)
+    target_link_libraries(bgfx PUBLIC OpenGL::GLX)
+elseif(TARGET OpenGL::EGL)
+    target_link_libraries(bgfx PUBLIC OpenGL::EGL)
 endif()
 
 target_compile_definitions(bgfx PUBLIC
     $<$<CONFIG:Debug>:BGFX_CONFIG_DEBUG=1>
     $<$<CONFIG:Release>:BGFX_CONFIG_DEBUG=0>
 )
+
+################################################################################
+# BGFX Examples
+################################################################################
+
+if (BGFX_BUILD_EXAMPLES)
+
+    file(GLOB_RECURSE EXAMPLE_SOURCES RELATIVE ${PROJECT_SOURCE_DIR}
+        examples/*.c*
+        3rdparty/dear-imgui/*.c*
+        3rdparty/ib-compress/*.c*
+    )
+
+    add_executable(bgfx_examples ${EXAMPLE_SOURCES})
+    target_compile_definitions(bgfx_examples PRIVATE ENTRY_CONFIG_USE_SDL=1)
+    target_include_directories(bgfx_examples PRIVATE
+        examples/common
+        examples/imgui
+        3rdparty
+    )
+
+    hunter_add_package(SDL2)
+    find_package(SDL2 CONFIG REQUIRED)
+
+    target_link_libraries(bgfx_examples PRIVATE
+        SDL2::SDL2
+        SDL2::SDL2main
+        bgfx
+    )
+
+    file(GLOB_RECURSE RUNTIMES RELATIVE ${PROJECT_SOURCE_DIR}/examples/runtime examples/runtime/*)
+    foreach(RUNTIME IN LISTS RUNTIMES)
+        configure_file(examples/runtime/${RUNTIME} ${PROJECT_BINARY_DIR}/${RUNTIME} COPYONLY)
+    endforeach()
+
+
+endif()
+
+################################################################################
+# CMake-friendly Install target configuration
+################################################################################
 
 set(targets_export_name "bgfxTargets")
 set(ConfigPackageLocation lib/cmake/bgfx)

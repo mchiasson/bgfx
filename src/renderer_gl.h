@@ -56,7 +56,7 @@
 #			include <GL/gl.h>
 #		endif // BX_PLATFORM_
 
-#		include <GL/glext.h>
+#		include <gl/glext.h>
 #	endif // BGFX_CONFIG_RENDERER_OPENGL >= 31
 
 #elif BGFX_CONFIG_RENDERER_OPENGLES
