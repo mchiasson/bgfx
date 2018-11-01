@@ -15,11 +15,30 @@ option(BGFX_BUILD_EXAMPLES "Build Examples" OFF)
 
 project(bgfx VERSION 1.0.0)
 
+hunter_add_package(bimg)
+hunter_add_package(bx)
+
+find_package(bimg CONFIG REQUIRED)
+find_package(bx CONFIG REQUIRED)
+find_package(OpenGL)
+find_package(Vulkan)
+find_package(X11)
+
 ################################################################################
 # BGFX Library
 ################################################################################
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    find_package(metal REQUIRED)
+    set(APPLE_SOURCE
+        src/glcontext_eagl.mm
+        src/glcontext_nsgl.mm
+        src/renderer_mtl.mm
+    )
+endif()
+
 add_library(bgfx
+    ${APPLE_SOURCE}
     src/bgfx.cpp
     src/debug_renderdoc.cpp
     src/dxgi.cpp
@@ -52,20 +71,14 @@ target_include_directories(bgfx
         3rdparty/khronos
 )
 
-hunter_add_package(bimg)
-hunter_add_package(bx)
-
-find_package(bimg CONFIG REQUIRED)
-find_package(bx CONFIG REQUIRED)
-find_package(OpenGL)
-find_package(Vulkan)
-find_package(X11)
-
 target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx ${X11_LIBRARIES})
 
 if(TARGET Vulkan::Vulkan)
     target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_VULKAN=1)
     target_link_libraries(bgfx PUBLIC Vulkan::Vulkan)
+elseif(TARGET metal::metal)
+        target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_METAL=1)
+        target_link_libraries(bgfx PUBLIC metal::metal)
 elseif(TARGET OpenGL::OpenGL)
     target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
     target_link_libraries(bgfx PUBLIC OpenGL::OpenGL)
