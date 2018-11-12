@@ -11,55 +11,28 @@ HunterGate(
     LOCAL
 )
 
-option(BGFX_BUILD_EXAMPLES "Build Examples" OFF)
-
 project(bgfx VERSION 1.0.0)
 
-hunter_add_package(bimg)
-hunter_add_package(bx)
-
-find_package(bimg CONFIG REQUIRED)
-find_package(bx CONFIG REQUIRED)
-find_package(OpenGL)
-find_package(Vulkan)
-find_package(X11)
+option(BGFX_BUILD_TOOLS "Build bgfx tools." ON)
+option(BGFX_BUILD_EXAMPLES "Build bgfx examples." ON)
 
 ################################################################################
 # BGFX Library
 ################################################################################
 
+file(GLOB BGFX_SOURCES src/*)
+set_source_files_properties(${PROJECT_SOURCE_DIR}/src/amalgamated.cpp PROPERTIES HEADER_FILE_ONLY ON)
+set_source_files_properties(${PROJECT_SOURCE_DIR}/src/amalgamated.mm PROPERTIES HEADER_FILE_ONLY ON)
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    find_package(metal REQUIRED)
-    set(APPLE_SOURCE
-        src/glcontext_eagl.mm
-        src/glcontext_nsgl.mm
-        src/renderer_mtl.mm
-    )
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/glcontext_glx.cpp PROPERTIES HEADER_FILE_ONLY ON)
+else()
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/glcontext_eagl.mm PROPERTIES HEADER_FILE_ONLY ON)
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/glcontext_nsgl.mm PROPERTIES HEADER_FILE_ONLY ON)
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/renderer_mtl.mm PROPERTIES HEADER_FILE_ONLY ON)
 endif()
 
-add_library(bgfx
-    ${APPLE_SOURCE}
-    src/bgfx.cpp
-    src/debug_renderdoc.cpp
-    src/dxgi.cpp
-    src/glcontext_egl.cpp
-    src/glcontext_glx.cpp
-    src/glcontext_wgl.cpp
-    src/nvapi.cpp
-    src/renderer_d3d11.cpp
-    src/renderer_d3d12.cpp
-    src/renderer_d3d9.cpp
-    src/renderer_gl.cpp
-    src/renderer_gnm.cpp
-    src/renderer_noop.cpp
-    src/renderer_vk.cpp
-    src/shader.cpp
-    src/shader_dx9bc.cpp
-    src/shader_dxbc.cpp
-    src/shader_spirv.cpp
-    src/topology.cpp
-    src/vertexdecl.cpp
-)
+add_library(bgfx ${BGFX_SOURCES})
 
 target_include_directories(bgfx
     PUBLIC
@@ -71,32 +44,99 @@ target_include_directories(bgfx
         3rdparty/khronos
 )
 
-target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx ${X11_LIBRARIES})
-
-if(TARGET Vulkan::Vulkan)
-    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_VULKAN=1)
-    target_link_libraries(bgfx PUBLIC Vulkan::Vulkan)
-elseif(TARGET metal::metal)
-        target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_METAL=1)
-        target_link_libraries(bgfx PUBLIC metal::metal)
-elseif(TARGET OpenGL::OpenGL)
-    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
-    target_link_libraries(bgfx PUBLIC OpenGL::OpenGL)
-elseif(TARGET OpenGL::GL)
-    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
-    target_link_libraries(bgfx PUBLIC OpenGL::GL)
-endif()
-
-if(TARGET OpenGL::GLX)
-    target_link_libraries(bgfx PUBLIC OpenGL::GLX)
-elseif(TARGET OpenGL::EGL)
-    target_link_libraries(bgfx PUBLIC OpenGL::EGL)
-endif()
-
 target_compile_definitions(bgfx PUBLIC
     $<$<CONFIG:Debug>:BGFX_CONFIG_DEBUG=1>
     $<$<CONFIG:Release>:BGFX_CONFIG_DEBUG=0>
+    $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
 )
+
+hunter_add_package(bimg)
+hunter_add_package(bx)
+find_package(bimg CONFIG REQUIRED)
+find_package(bx CONFIG REQUIRED)
+target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx)
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+
+    find_library(COCOA_LIBRARY Cocoa)
+    find_package(metal REQUIRED)
+    find_package(quartzcore REQUIRED)
+    mark_as_advanced(COCOA_LIBRARY)
+
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_METAL=1)
+    target_link_libraries(bgfx
+        PUBLIC
+            ${COCOA_LIBRARY}
+            metal::metal
+            quartzcore::quartzcore
+    )
+
+elseif(UNIX AND NOT EMSCRIPTEN)
+
+    find_package(OpenGL REQUIRED)
+    find_package(Vulkan)
+    find_package(X11 REQUIRED)
+
+    target_link_libraries(bgfx PUBLIC ${X11_LIBRARIES})
+
+    if(TARGET Vulkan::Vulkan)
+        target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_VULKAN=1)
+        target_link_libraries(bgfx PUBLIC Vulkan::Vulkan)
+    elseif(TARGET OpenGL::OpenGL)
+        target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
+        target_link_libraries(bgfx PUBLIC OpenGL::OpenGL)
+    elseif(TARGET OpenGL::GL)
+        target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_OPENGL=1)
+        target_link_libraries(bgfx PUBLIC OpenGL::GL)
+    endif()
+
+    if(TARGET OpenGL::GLX)
+        target_link_libraries(bgfx PUBLIC OpenGL::GLX)
+    elseif(TARGET OpenGL::EGL)
+        target_link_libraries(bgfx PUBLIC OpenGL::EGL)
+    endif()
+
+endif()
+
+################################################################################
+# BGFX Tools
+################################################################################
+
+if (BGFX_BUILD_TOOLS)
+
+    ########################
+    # BGFX Geometry Compiler
+    ########################
+
+    add_executable(geometryc
+        3rdparty/forsyth-too/forsythtriangleorderoptimizer.cpp
+        3rdparty/ib-compress/indexbuffercompression.cpp
+        3rdparty/ib-compress/indexbufferdecompression.cpp
+        examples/common/bounds.cpp
+        tools/geometryc/geometryc.cpp
+    )
+    target_compile_definitions(geometryc PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
+    )
+    target_include_directories(geometryc PRIVATE
+        ${PROJECT_SOURCE_DIR}/3rdparty
+        ${PROJECT_SOURCE_DIR}/examples/common
+    )
+    target_link_libraries(geometryc PRIVATE bgfx)
+
+    ######################
+    # BGFX Shader Compiler
+    ######################
+#    add_executable(shaderc
+#        tools/shaderc/shaderc.cpp
+#        tools/shaderc/shaderc_glsl.cpp
+#        tools/shaderc/shaderc_hlsl.cpp
+#        tools/shaderc/shaderc_pssl.cpp
+#        tools/shaderc/shaderc_spirv.cpp
+#    )
+#    target_link_libraries(shaderc PRIVATE bgfx)
+
+endif()
 
 ################################################################################
 # BGFX Examples
@@ -173,6 +213,18 @@ install(TARGETS bgfx
     PUBLIC_HEADER DESTINATION include COMPONENT Development
     BUNDLE DESTINATION bin COMPONENT Runtime
 )
+
+if (BGFX_BUILD_TOOLS)
+    install(TARGETS geometryc
+        EXPORT ${targets_export_name}
+        LIBRARY DESTINATION lib COMPONENT Runtime
+        ARCHIVE DESTINATION lib COMPONENT Development
+        RUNTIME DESTINATION bin COMPONENT Runtime
+        BUNDLE DESTINATION bin COMPONENT Runtime
+        PUBLIC_HEADER DESTINATION include COMPONENT Development
+        BUNDLE DESTINATION bin COMPONENT Runtime
+    )
+endif()
 
 # Install the generated CMake files.
 install(
