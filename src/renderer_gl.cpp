@@ -2276,7 +2276,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					: 0
 					;
 
-				if (NULL == glPolygonMode)
+				if (BX_ENABLED(BX_PLATFORM_EMSCRIPTEN)
+				||  NULL == glPolygonMode)
 				{
 					glPolygonMode = stubPolygonMode;
 				}
@@ -4618,8 +4619,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					, _depth
 					) );
 			}
-
-			if (computeWrite)
+			else if (computeWrite)
 			{
 				if (_target == GL_TEXTURE_3D)
 				{
