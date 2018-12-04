@@ -838,7 +838,7 @@ namespace bgfx { namespace mtl
 
 		TextureMtl()
 			: m_ptr(NULL)
-			, m_ptrMSAA(NULL)
+			, m_ptrMsaa(NULL)
 			, m_ptrStencil(NULL)
 			, m_sampler(NULL)
 			, m_flags(0)
@@ -875,7 +875,7 @@ namespace bgfx { namespace mtl
 			);
 
 		Texture m_ptr;
-		Texture m_ptrMSAA;
+		Texture m_ptrMsaa;
 		Texture m_ptrStencil; // for emulating packed depth/stencil formats - only for iOS8...
 		SamplerState m_sampler;
 		uint64_t m_flags;
@@ -886,6 +886,35 @@ namespace bgfx { namespace mtl
 		uint8_t m_requestedFormat;
 		uint8_t m_textureFormat;
 		uint8_t m_numMips;
+	};
+
+	struct FrameBufferMtl;
+
+	struct SwapChainMtl
+	{
+		SwapChainMtl()
+			: m_metalLayer(nil)
+			, m_drawable(nil)
+			, m_backBufferColorMsaa()
+			, m_backBufferDepth()
+			, m_backBufferStencil()
+			, m_maxAnisotropy(0)
+		{
+		}
+
+		~SwapChainMtl();
+
+		void init(void* _nwh);
+		void resize(FrameBufferMtl &_frameBuffer, uint32_t _width, uint32_t _height, uint32_t _flags);
+
+		id<CAMetalDrawable> currentDrawable();
+
+		CAMetalLayer* m_metalLayer;
+		id <CAMetalDrawable> m_drawable;
+		Texture m_backBufferColorMsaa;
+		Texture m_backBufferDepth;
+		Texture m_backBufferStencil;
+		uint32_t m_maxAnisotropy;
 	};
 
 	struct FrameBufferMtl
@@ -910,6 +939,7 @@ namespace bgfx { namespace mtl
 		void postReset();
 		uint16_t destroy();
 
+		SwapChainMtl* m_swapChain;
 		uint32_t m_width;
 		uint32_t m_height;
 		uint16_t m_denseIdx;

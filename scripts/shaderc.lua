@@ -199,6 +199,7 @@ project "glslang"
 	configuration { "mingw* or linux or osx" }
 		buildoptions {
 			"-Wno-ignored-qualifiers",
+			"-Wno-implicit-fallthrough",
 			"-Wno-missing-field-initializers",
 			"-Wno-reorder",
 			"-Wno-return-type",
@@ -309,7 +310,6 @@ project "glsl-optimizer"
 			"-Wno-sign-compare",
 			"-Wno-unused-function",
 			"-Wno-unused-parameter",
-			"-Wno-misleading-indentation",
 		}
 
 		removebuildoptions {
@@ -362,6 +362,7 @@ project "fcpp"
 	configuration { "not vs*" }
 		buildoptions {
 			"-Wno-implicit-fallthrough",
+			"-Wno-parentheses-equality",
 		}
 
 	configuration {}

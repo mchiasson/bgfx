@@ -414,8 +414,18 @@ namespace bgfx
 	class File
 	{
 	public:
-		File(const char* _filePath)
+		File()
 			: m_data(NULL)
+			, m_size(0)
+		{
+		}
+
+		~File()
+		{
+			delete [] m_data;
+		}
+
+		void load(const bx::FilePath& _filePath)
 		{
 			bx::FileReader reader;
 			if (bx::open(&reader, _filePath) )
@@ -435,11 +445,6 @@ namespace bgfx
 
 				m_data[m_size] = '\0';
 			}
-		}
-
-		~File()
-		{
-			delete [] m_data;
 		}
 
 		const char* getData() const
@@ -2402,18 +2407,24 @@ namespace bgfx
 		}
 		else
 		{
-			std::string defaultVarying = dir + "varying.def.sc";
-			const char* varyingdef = cmdLine.findOption("varyingdef", defaultVarying.c_str() );
-			File attribdef(varyingdef);
-			const char* parse = attribdef.getData();
-			if (NULL != parse
-			&&  *parse != '\0')
+			const char* varying = NULL;
+			File attribdef;
+
+			if ('c' != options.shaderType)
 			{
-				options.dependencies.push_back(varyingdef);
-			}
-			else
-			{
-				fprintf(stderr, "ERROR: Failed to parse varying def file: \"%s\" No input/output semantics will be generated in the code!\n", varyingdef);
+				std::string defaultVarying = dir + "varying.def.sc";
+				const char* varyingdef = cmdLine.findOption("varyingdef", defaultVarying.c_str() );
+				attribdef.load(varyingdef);
+				varying = attribdef.getData();
+				if (NULL     != varying
+				&&  *varying != '\0')
+				{
+					options.dependencies.push_back(varyingdef);
+				}
+				else
+				{
+					fprintf(stderr, "ERROR: Failed to parse varying def file: \"%s\" No input/output semantics will be generated in the code!\n", varyingdef);
+				}
 			}
 
 			const size_t padding    = 16384;
@@ -2452,7 +2463,7 @@ namespace bgfx
 				return bx::kExitFailure;
 			}
 
-			compiled = compileShader(attribdef.getData(), commandLineComment.c_str(), data, size, options, writer);
+			compiled = compileShader(varying, commandLineComment.c_str(), data, size, options, writer);
 
 			bx::close(writer);
 			delete writer;

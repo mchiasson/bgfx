@@ -488,6 +488,40 @@ namespace bgfx
 		return handle;
 	}
 
+	void dump(const VertexDecl& _decl)
+	{
+		if (BX_ENABLED(BGFX_CONFIG_DEBUG) )
+		{
+			BX_TRACE("vertexdecl %08x (%08x), stride %d"
+				, _decl.m_hash
+				, bx::hash<bx::HashMurmur2A>(_decl.m_attributes)
+				, _decl.m_stride
+				);
+
+			for (uint32_t attr = 0; attr < Attrib::Count; ++attr)
+			{
+				if (UINT16_MAX != _decl.m_attributes[attr])
+				{
+					uint8_t num;
+					AttribType::Enum type;
+					bool normalized;
+					bool asInt;
+					_decl.decode(Attrib::Enum(attr), num, type, normalized, asInt);
+
+					BX_TRACE("\tattr %d - %s, num %d, type %d, norm %d, asint %d, offset %d"
+						, attr
+						, getAttribName(Attrib::Enum(attr) )
+						, num
+						, type
+						, normalized
+						, asInt
+						, _decl.m_offset[attr]
+						);
+				}
+			}
+		}
+	}
+
 #include "charset.h"
 
 	void charsetFillTexture(const uint8_t* _charset, uint8_t* _rgba, uint32_t _height, uint32_t _pitch, uint32_t _bpp)
@@ -2097,7 +2131,7 @@ namespace bgfx
 
 		m_submit->finish();
 
-		bx::xchg(m_render, m_submit);
+		bx::swap(m_render, m_submit);
 
 		bx::memCopy(m_render->m_occlusion, m_submit->m_occlusion, sizeof(m_submit->m_occlusion) );
 
@@ -3102,6 +3136,15 @@ namespace bgfx
 		limits.maxEncoders     = BGFX_CONFIG_DEFAULT_MAX_ENCODERS;
 		limits.transientVbSize = BGFX_CONFIG_TRANSIENT_VERTEX_BUFFER_SIZE;
 		limits.transientIbSize = BGFX_CONFIG_TRANSIENT_INDEX_BUFFER_SIZE;
+	}
+
+	void Attachment::init(TextureHandle _handle, Access::Enum _access, uint16_t _layer, uint16_t _mip, uint8_t _resolve)
+	{
+		access  = _access;
+		handle  = _handle;
+		mip     = _mip;
+		layer   = _layer;
+		resolve = _resolve;
 	}
 
 	bool init(const Init& _init)
@@ -4288,10 +4331,7 @@ namespace bgfx
 		for (uint8_t ii = 0; ii < _num; ++ii)
 		{
 			Attachment& at = attachment[ii];
-			at.handle  = _handles[ii];
-			at.mip     = 0;
-			at.layer   = 0;
-			at.resolve = BGFX_RESOLVE_AUTO_GEN_MIPS;
+			at.init(_handles[ii], Access::Write, 0, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
 		}
 		return createFrameBuffer(_num, attachment, _destroyTextures);
 	}
@@ -4752,13 +4792,13 @@ extern "C"
 	// When laptop setup has integrated and discrete GPU, following driver workarounds will
 	// select discrete GPU:
 
-	// Reference:
-	//  - https://web.archive.org/web/20180722051003/https://docs.nvidia.com/gameworks/content/technologies/desktop/optimus.htm
+	// Reference(s):
+	// - https://web.archive.org/web/20180722051003/https://docs.nvidia.com/gameworks/content/technologies/desktop/optimus.htm
 	//
 	__declspec(dllexport) uint32_t NvOptimusEnablement = UINT32_C(1);
 
-	// Reference:
-	//  - https://web.archive.org/web/20180722051032/https://gpuopen.com/amdpowerxpressrequesthighperformance/
+	// Reference(s):
+	// - https://web.archive.org/web/20180722051032/https://gpuopen.com/amdpowerxpressrequesthighperformance/
 	//
 	__declspec(dllexport) uint32_t AmdPowerXpressRequestHighPerformance = UINT32_C(1);
 }

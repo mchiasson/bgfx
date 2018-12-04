@@ -4,13 +4,11 @@
  */
 
 /*
- * References:
- *
- * Experiments in GPU-based occlusion culling
- * https://web.archive.org/web/20180920045301/https://interplayoflight.wordpress.com/2017/11/15/experiments-in-gpu-based-occlusion-culling/
- *
- * Experiments in GPU-based occlusion culling part 2: MultiDrawIndirect and mesh lodding
- * https://web.archive.org/web/20180920045332/https://interplayoflight.wordpress.com/2018/01/15/experiments-in-gpu-based-occlusion-culling-part-2-multidrawindirect-and-mesh-lodding/
+ * Reference(s):
+ * - Experiments in GPU-based occlusion culling
+ *   https://web.archive.org/web/20180920045301/https://interplayoflight.wordpress.com/2017/11/15/experiments-in-gpu-based-occlusion-culling/
+ * - Experiments in GPU-based occlusion culling part 2: MultiDrawIndirect and mesh lodding
+ *   https://web.archive.org/web/20180920045332/https://interplayoflight.wordpress.com/2018/01/15/experiments-in-gpu-based-occlusion-culling-part-2-multidrawindirect-and-mesh-lodding/
  */
 
 #include "common.h"
@@ -55,7 +53,7 @@ struct Camera
 
 	void mtxLookAt(float* _outViewMtx)
 	{
-		bx::mtxLookAt(_outViewMtx, m_pos.curr, m_target.curr);
+		bx::mtxLookAt(_outViewMtx, bx::load(m_pos.curr), bx::load(m_target.curr) );
 	}
 
 	void orbit(float _dx, float _dy)
