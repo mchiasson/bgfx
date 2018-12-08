@@ -204,6 +204,16 @@ install(
     DESTINATION include COMPONENT Development
 )
 
+install(FILES
+    3rdparty/ib-compress/indexbuffercompressionformat.h
+    3rdparty/ib-compress/indexbuffercompression.h
+    3rdparty/ib-compress/indexbufferdecompression.h
+    3rdparty/ib-compress/indexcompressionconstants.h
+    3rdparty/ib-compress/readbitstream.h
+    3rdparty/ib-compress/writebitstream.h
+    DESTINATION include/ib-compress COMPONENT Development
+)
+
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
     LIBRARY DESTINATION lib COMPONENT Runtime
