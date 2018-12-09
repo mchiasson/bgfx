@@ -99,6 +99,20 @@ elseif(UNIX AND NOT EMSCRIPTEN)
 endif()
 
 ################################################################################
+# BGFX 3rdparty libs
+################################################################################
+add_library(ib-compress
+    3rdparty/ib-compress/indexbuffercompression.cpp
+    3rdparty/ib-compress/indexbufferdecompression.cpp
+)
+target_include_directories(ib-compress PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+    $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(bgfx PUBLIC ib-compress)
+
+################################################################################
 # BGFX Tools
 ################################################################################
 
@@ -110,8 +124,6 @@ if (BGFX_BUILD_TOOLS)
 
     add_executable(geometryc
         3rdparty/forsyth-too/forsythtriangleorderoptimizer.cpp
-        3rdparty/ib-compress/indexbuffercompression.cpp
-        3rdparty/ib-compress/indexbufferdecompression.cpp
         examples/common/bounds.cpp
         tools/geometryc/geometryc.cpp
     )
@@ -147,7 +159,6 @@ if (BGFX_BUILD_EXAMPLES)
     file(GLOB_RECURSE EXAMPLE_SOURCES RELATIVE ${PROJECT_SOURCE_DIR}
         examples/*.c*
         3rdparty/dear-imgui/*.c*
-        3rdparty/ib-compress/*.c*
     )
 
     add_executable(bgfx_examples ${EXAMPLE_SOURCES})
@@ -232,7 +243,7 @@ install(FILES
     DESTINATION include/sdf COMPONENT Development
 )
 
-install(TARGETS bgfx
+install(TARGETS bgfx ib-compress
     EXPORT ${targets_export_name}
     LIBRARY DESTINATION lib COMPONENT Runtime
     ARCHIVE DESTINATION lib COMPONENT Development
