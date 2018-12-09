@@ -262,9 +262,6 @@ install(FILES
     3rdparty/dear-imgui/imstb_rectpack.h
     3rdparty/dear-imgui/imstb_textedit.h
     3rdparty/dear-imgui/imstb_truetype.h
-    3rdparty/dear-imgui/stb_rect_pack.h
-    3rdparty/dear-imgui/stb_textedit.h
-    3rdparty/dear-imgui/stb_truetype.h
     DESTINATION include/dear-imgui COMPONENT Development
 )
 
@@ -284,13 +281,6 @@ install(FILES
     3rdparty/dear-imgui/widgets/range_slider.h
     3rdparty/dear-imgui/widgets/range_slider.inl
     DESTINATION include/dear-imgui/widgets COMPONENT Development
-)
-
-install(FILES
-    3rdparty/stb/stb_textedit.h
-    3rdparty/stb/stb_truetype.h
-    3rdparty/stb/stb_rect_pack.h
-    DESTINATION include/stb COMPONENT Development
 )
 
 install(FILES
