@@ -110,7 +110,22 @@ target_include_directories(ib-compress PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(bgfx PUBLIC ib-compress)
+add_library(dear-imgui
+    3rdparty/dear-imgui/imgui_demo.cpp
+    3rdparty/dear-imgui/imgui_draw.cpp
+    3rdparty/dear-imgui/imgui.cpp
+    3rdparty/dear-imgui/imgui_widgets.cpp
+)
+target_include_directories(dear-imgui PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(dear-imgui PUBLIC bx::bx)
+
+target_link_libraries(bgfx PUBLIC
+    ib-compress
+    dear-imgui
+)
 
 ################################################################################
 # BGFX Tools
@@ -239,11 +254,44 @@ install(FILES
 )
 
 install(FILES
+    3rdparty/dear-imgui/imconfig.h
+    3rdparty/dear-imgui/imgui.h
+    3rdparty/dear-imgui/imgui_internal.h
+    3rdparty/dear-imgui/imgui_user.h
+    3rdparty/dear-imgui/imgui_user.inl
+    3rdparty/dear-imgui/imstb_rectpack.h
+    3rdparty/dear-imgui/imstb_textedit.h
+    3rdparty/dear-imgui/imstb_truetype.h
+    3rdparty/dear-imgui/stb_rect_pack.h
+    3rdparty/dear-imgui/stb_textedit.h
+    3rdparty/dear-imgui/stb_truetype.h
+    DESTINATION include/dear-imgui COMPONENT Development
+)
+
+install(FILES
+    3rdparty/dear-imgui/widgets/color_picker.h
+    3rdparty/dear-imgui/widgets/color_picker.inl
+    3rdparty/dear-imgui/widgets/color_wheel.h
+    3rdparty/dear-imgui/widgets/color_wheel.inl
+    3rdparty/dear-imgui/widgets/dock.h
+    3rdparty/dear-imgui/widgets/dock.inl
+    3rdparty/dear-imgui/widgets/file_list.h
+    3rdparty/dear-imgui/widgets/file_list.inl
+    3rdparty/dear-imgui/widgets/gizmo.h
+    3rdparty/dear-imgui/widgets/gizmo.inl
+    3rdparty/dear-imgui/widgets/memory_editor.h
+    3rdparty/dear-imgui/widgets/memory_editor.inl
+    3rdparty/dear-imgui/widgets/range_slider.h
+    3rdparty/dear-imgui/widgets/range_slider.inl
+    DESTINATION include/dear-imgui/widgets COMPONENT Development
+)
+
+install(FILES
     3rdparty/sdf/sdf.h
     DESTINATION include/sdf COMPONENT Development
 )
 
-install(TARGETS bgfx ib-compress
+install(TARGETS bgfx ib-compress dear-imgui
     EXPORT ${targets_export_name}
     LIBRARY DESTINATION lib COMPONENT Runtime
     ARCHIVE DESTINATION lib COMPONENT Development
