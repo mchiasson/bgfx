@@ -287,6 +287,13 @@ install(FILES
 )
 
 install(FILES
+    3rdparty/stb/stb_textedit.h
+    3rdparty/stb/stb_truetype.h
+    3rdparty/stb/stb_rect_pack.h
+    DESTINATION include/stb COMPONENT Development
+)
+
+install(FILES
     3rdparty/sdf/sdf.h
     DESTINATION include/sdf COMPONENT Development
 )
