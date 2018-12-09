@@ -214,6 +214,19 @@ install(FILES
     DESTINATION include/ib-compress COMPONENT Development
 )
 
+install(FILES
+    3rdparty/iconfontheaders/icons_font_awesome_4.h
+    3rdparty/iconfontheaders/icons_font_awesome_5_brands.h
+    3rdparty/iconfontheaders/icons_font_awesome_5.h
+    3rdparty/iconfontheaders/icons_font_awesome.h
+    3rdparty/iconfontheaders/icons_fork_awesome.h
+    3rdparty/iconfontheaders/icons_ionicons.h
+    3rdparty/iconfontheaders/icons_kenney.h
+    3rdparty/iconfontheaders/icons_material_design.h
+    3rdparty/iconfontheaders/icons_material_design_icons.h
+    DESTINATION include/iconfontheaders COMPONENT Development
+)
+
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
     LIBRARY DESTINATION lib COMPONENT Runtime
