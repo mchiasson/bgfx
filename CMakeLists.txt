@@ -227,6 +227,11 @@ install(FILES
     DESTINATION include/iconfontheaders COMPONENT Development
 )
 
+install(FILES
+    3rdparty/sdf/sdf.h
+    DESTINATION include/sdf COMPONENT Development
+)
+
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
     LIBRARY DESTINATION lib COMPONENT Runtime
