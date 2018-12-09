@@ -74,7 +74,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 elseif(UNIX AND NOT EMSCRIPTEN)
 
     find_package(OpenGL REQUIRED)
-    find_package(Vulkan)
+    #find_package(Vulkan)
     find_package(X11 REQUIRED)
 
     target_link_libraries(bgfx PUBLIC ${X11_LIBRARIES})
