@@ -6,8 +6,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(Hunter/HunterGate)
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.23.30.tar.gz"
-    SHA1 "c062b0a2316cf8dcb57b6a9ad49fea1025a928f6"
+    URL "https://github.com/ruslo/hunter/archive/v0.23.69.tar.gz"
+    SHA1 "3d6b1267844f7bb64ba9981ac5a1ff78a0237d41"
     LOCAL
 )
 
@@ -50,11 +50,13 @@ target_compile_definitions(bgfx PUBLIC
     $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
 )
 
-hunter_add_package(bimg)
 hunter_add_package(bx)
-find_package(bimg CONFIG REQUIRED)
 find_package(bx CONFIG REQUIRED)
-target_link_libraries(bgfx PUBLIC bimg::bimg bx::bx)
+target_link_libraries(bgfx PUBLIC bx::bx)
+
+hunter_add_package(bimg)
+find_package(bimg CONFIG REQUIRED)
+target_link_libraries(bgfx PUBLIC bimg::bimg)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
@@ -111,7 +113,6 @@ target_include_directories(ib-compress PUBLIC
 )
 
 add_library(dear-imgui
-    3rdparty/dear-imgui/imgui_demo.cpp
     3rdparty/dear-imgui/imgui_draw.cpp
     3rdparty/dear-imgui/imgui.cpp
     3rdparty/dear-imgui/imgui_widgets.cpp
@@ -173,7 +174,6 @@ if (BGFX_BUILD_EXAMPLES)
 
     file(GLOB_RECURSE EXAMPLE_SOURCES RELATIVE ${PROJECT_SOURCE_DIR}
         examples/*.c*
-        3rdparty/dear-imgui/*.c*
     )
 
     add_executable(bgfx_examples ${EXAMPLE_SOURCES})
@@ -191,6 +191,8 @@ if (BGFX_BUILD_EXAMPLES)
         SDL2::SDL2
         SDL2::SDL2main
         bgfx
+        ib-compress
+        dear-imgui
     )
 
     file(GLOB_RECURSE RUNTIMES RELATIVE ${PROJECT_SOURCE_DIR}/examples/runtime examples/runtime/*)
