@@ -17,6 +17,162 @@ option(BGFX_BUILD_TOOLS "Build bgfx tools." ON)
 option(BGFX_BUILD_EXAMPLES "Build bgfx examples." ON)
 
 ################################################################################
+# BGFX 3rdparty libs
+################################################################################
+add_library(ib-compress
+    3rdparty/ib-compress/indexbuffercompression.cpp
+    3rdparty/ib-compress/indexbufferdecompression.cpp
+)
+target_include_directories(ib-compress PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+    $<INSTALL_INTERFACE:include>
+)
+
+add_library(dear-imgui
+    3rdparty/dear-imgui/imgui_draw.cpp
+    3rdparty/dear-imgui/imgui.cpp
+    3rdparty/dear-imgui/imgui_widgets.cpp
+)
+target_include_directories(dear-imgui PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(dear-imgui PUBLIC bx::bx)
+
+add_library(glslang
+    3rdparty/glslang/SPIRV/doc.cpp
+    3rdparty/glslang/SPIRV/disassemble.cpp
+    3rdparty/glslang/SPIRV/SpvPostProcess.cpp
+    3rdparty/glslang/SPIRV/SPVRemapper.cpp
+    3rdparty/glslang/SPIRV/GlslangToSpv.cpp
+    3rdparty/glslang/SPIRV/Logger.cpp
+    3rdparty/glslang/SPIRV/InReadableOrder.cpp
+    3rdparty/glslang/SPIRV/SpvTools.cpp
+    3rdparty/glslang/SPIRV/SpvBuilder.cpp
+    3rdparty/glslang/hlsl/hlslAttributes.cpp
+    3rdparty/glslang/hlsl/hlslParseables.cpp
+    3rdparty/glslang/hlsl/hlslGrammar.cpp
+    3rdparty/glslang/hlsl/hlslOpMap.cpp
+    3rdparty/glslang/hlsl/hlslScanContext.cpp
+    3rdparty/glslang/hlsl/hlslTokenStream.cpp
+    3rdparty/glslang/hlsl/hlslParseHelper.cpp
+    3rdparty/glslang/hlsl/pch.cpp
+    3rdparty/glslang//OGLCompilersDLL/InitializeDll.cpp
+    3rdparty/glslang/glslang/MachineIndependent/iomapper.cpp
+    3rdparty/glslang/glslang/MachineIndependent/reflection.cpp
+    3rdparty/glslang/glslang/MachineIndependent/ParseContextBase.cpp
+    3rdparty/glslang/glslang/MachineIndependent/InfoSink.cpp
+    3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
+    3rdparty/glslang/glslang/MachineIndependent/IntermTraverse.cpp
+    3rdparty/glslang/glslang/MachineIndependent/ParseHelper.cpp
+    3rdparty/glslang/glslang/MachineIndependent/Intermediate.cpp
+    3rdparty/glslang/glslang/MachineIndependent/RemoveTree.cpp
+    3rdparty/glslang/glslang/MachineIndependent/linkValidate.cpp
+    3rdparty/glslang/glslang/MachineIndependent/intermOut.cpp
+    3rdparty/glslang/glslang/MachineIndependent/Constant.cpp
+    3rdparty/glslang/glslang/MachineIndependent/Initialize.cpp
+    3rdparty/glslang/glslang/MachineIndependent/attribute.cpp
+    3rdparty/glslang/glslang/MachineIndependent/glslang_tab.cpp
+    3rdparty/glslang/glslang/MachineIndependent/Scan.cpp
+    3rdparty/glslang/glslang/MachineIndependent/parseConst.cpp
+    3rdparty/glslang/glslang/MachineIndependent/ShaderLang.cpp
+    3rdparty/glslang/glslang/MachineIndependent/Versions.cpp
+    3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
+    3rdparty/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
+    3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
+    3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
+    3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
+    3rdparty/glslang/glslang/MachineIndependent/SymbolTable.cpp
+    3rdparty/glslang/glslang/MachineIndependent/pch.cpp
+    3rdparty/glslang/glslang/MachineIndependent/PoolAlloc.cpp
+    3rdparty/glslang/glslang/MachineIndependent/limits.cpp
+    3rdparty/glslang/glslang/GenericCodeGen/CodeGen.cpp
+    3rdparty/glslang/glslang/GenericCodeGen/Link.cpp
+)
+
+if (MSVC)
+    target_sources(glslang PUBLIC
+        ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Windows/ossource.cpp
+    )
+else()
+    target_sources(glslang INTERFACE
+        ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp
+    )
+endif()
+
+target_compile_definitions(glslang PUBLIC ENABLE_HLSL=1)
+target_include_directories(glslang PUBLIC 
+    3rdparty/glslang 
+    3rdparty/glslang/glslang/Include
+    3rdparty/glslang/glslang/Public
+)
+
+add_library(fcpp
+    3rdparty/fcpp/cpp1.c
+    3rdparty/fcpp/cpp2.c
+    3rdparty/fcpp/cpp3.c
+    3rdparty/fcpp/cpp4.c
+    3rdparty/fcpp/cpp5.c
+    3rdparty/fcpp/cpp6.c
+    #3rdparty/fcpp/usecpp.c
+)
+
+file(GLOB glcpp-library_sources 
+    3rdparty/glsl-optimizer/src/glsl/glcpp/*.c 
+    3rdparty/glsl-optimizer/src/util/*.c
+)
+
+add_library(glcpp-library ${glcpp-library_sources})
+
+target_include_directories(glcpp-library 
+    PUBLIC 
+        3rdparty/glsl-optimizer/include
+    PRIVATE
+        3rdparty/glsl-optimizer/src 
+        3rdparty/glsl-optimizer/src/mesa
+)
+
+file(GLOB mesa_sources 
+    3rdparty/glsl-optimizer/src/mesa/program/*.c 
+    3rdparty/glsl-optimizer/src/mesa/main/*.c
+)
+
+add_library(mesa ${mesa_sources})
+
+target_include_directories(mesa 
+    PUBLIC 
+        3rdparty/glsl-optimizer/include
+    PRIVATE
+        3rdparty/glsl-optimizer/src 
+        3rdparty/glsl-optimizer/src/mesa
+)
+
+file(GLOB glsl_sources 
+    3rdparty/glsl-optimizer/src/glsl/*.cpp 
+    3rdparty/glsl-optimizer/src/glsl/*.c
+)
+
+file(GLOB glsl_sources_remove 
+    3rdparty/glsl-optimizer/src/glsl/main.cpp 
+    3rdparty/glsl-optimizer/src/glsl/builtin_stubs.cpp
+)
+
+list(REMOVE_ITEM glsl_sources ${glsl_sources_remove})
+
+add_library(glsl_optimizer ${glsl_sources})
+target_link_libraries(glsl_optimizer PUBLIC glcpp-library mesa ${OPENGL_LIBRARIES})
+target_include_directories(glsl_optimizer 
+    PUBLIC 
+        3rdparty/glsl-optimizer/include
+        3rdparty/glsl-optimizer/src/glsl
+    PRIVATE 
+        3rdparty/glsl-optimizer/src
+        3rdparty/glsl-optimizer/src/mesa
+)
+
+target_include_directories(fcpp PUBLIC 3rdparty/fcpp)
+
+################################################################################
 # BGFX Library
 ################################################################################
 
@@ -100,29 +256,6 @@ elseif(UNIX AND NOT EMSCRIPTEN)
 
 endif()
 
-################################################################################
-# BGFX 3rdparty libs
-################################################################################
-add_library(ib-compress
-    3rdparty/ib-compress/indexbuffercompression.cpp
-    3rdparty/ib-compress/indexbufferdecompression.cpp
-)
-target_include_directories(ib-compress PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
-    $<INSTALL_INTERFACE:include>
-)
-
-add_library(dear-imgui
-    3rdparty/dear-imgui/imgui_draw.cpp
-    3rdparty/dear-imgui/imgui.cpp
-    3rdparty/dear-imgui/imgui_widgets.cpp
-)
-target_include_directories(dear-imgui PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
-    $<INSTALL_INTERFACE:include>
-)
-target_link_libraries(dear-imgui PUBLIC bx::bx)
-
 target_link_libraries(bgfx PUBLIC
     ib-compress
     dear-imgui
@@ -155,14 +288,19 @@ if (BGFX_BUILD_TOOLS)
     ######################
     # BGFX Shader Compiler
     ######################
-#    add_executable(shaderc
-#        tools/shaderc/shaderc.cpp
-#        tools/shaderc/shaderc_glsl.cpp
-#        tools/shaderc/shaderc_hlsl.cpp
-#        tools/shaderc/shaderc_pssl.cpp
-#        tools/shaderc/shaderc_spirv.cpp
-#    )
-#    target_link_libraries(shaderc PRIVATE bgfx)
+
+    add_executable(shaderc
+        src/shader_spirv.cpp
+        src/vertexdecl.cpp
+        tools/shaderc/shaderc.cpp
+        tools/shaderc/shaderc_glsl.cpp
+        tools/shaderc/shaderc_hlsl.cpp
+        tools/shaderc/shaderc_pssl.cpp
+        tools/shaderc/shaderc_spirv.cpp
+    )
+
+    target_include_directories(shaderc PRIVATE include)
+    target_link_libraries(shaderc PRIVATE glslang fcpp glsl_optimizer bx::bx)
 
 endif()
 
@@ -301,7 +439,7 @@ install(TARGETS bgfx ib-compress dear-imgui
 )
 
 if (BGFX_BUILD_TOOLS)
-    install(TARGETS geometryc
+    install(TARGETS geometryc shaderc
         EXPORT ${targets_export_name}
         LIBRARY DESTINATION lib COMPONENT Runtime
         ARCHIVE DESTINATION lib COMPONENT Development
