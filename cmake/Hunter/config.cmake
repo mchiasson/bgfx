@@ -1,10 +1,10 @@
 hunter_config(bx
-    URL https://github.com/mchiasson/bx/archive/v1.0.0-p6.tar.gz
-    SHA1 37c85f06dcc185b9bdc6d1b8f201423c7b1022bb
+    URL https://github.com/mchiasson/bx/archive/v1.0.0-p7.tar.gz
+    SHA1 e8735ca5ca598cbce9afec747b205c47ca627836
 )
 
 hunter_config(bimg
-    URL https://github.com/mchiasson/bimg/archive/v1.0.0-p6.tar.gz
-    SHA1 6e1ec985fabd5dc997f37b52c809d23ae10f7041
+    URL https://github.com/mchiasson/bimg/archive/v1.0.0-p7.tar.gz
+    SHA1 2e2a2f3895a2da1123116efc68615b3dc764730c
 )
 
