@@ -100,6 +100,14 @@ elseif(UNIX AND NOT EMSCRIPTEN)
         target_link_libraries(bgfx PUBLIC OpenGL::EGL)
     endif()
 
+else()
+
+    find_package(D3D12)
+    if(D3D12_FOUND)
+        target_link_libraries(bgfx PUBLIC ${D3D12_LIBRARIES})
+        target_include_directories(bgfx PUBLIC ${D3D12_INCLUDE_DIRS} PRIVATE 3rdparty/dxsdk/include)
+    endif()
+
 endif()
 
 ################################################################################
@@ -149,7 +157,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
         3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
         3rdparty/glslang/glslang/MachineIndependent/reflection.cpp
-        3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp
+        #3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp
         3rdparty/glslang/hlsl/hlslAttributes.cpp
         3rdparty/glslang/hlsl/hlslGrammar.cpp
         3rdparty/glslang/hlsl/hlslOpMap.cpp
@@ -159,6 +167,11 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glslang/hlsl/hlslTokenStream.cpp
         3rdparty/glslang/hlsl/pch.cpp
     )
+	if (MSVC)
+		target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Windows/ossource.cpp)
+	elseif(UNIX)
+		target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp)
+	endif()
     target_compile_definitions(glslang PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS ENABLE_OPT=1 ENABLE_HLSL=1)
     target_include_directories(glslang PUBLIC 
         3rdparty/glslang 
