@@ -9,7 +9,7 @@ HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.23.69.tar.gz"
     SHA1 "3d6b1267844f7bb64ba9981ac5a1ff78a0237d41"
     LOCAL
-)
+    )
 
 project(bgfx VERSION 1.0.0)
 
@@ -44,21 +44,21 @@ add_library(bgfx ${BGFX_SOURCES})
 
 target_include_directories(bgfx
     PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
     PRIVATE
-        src
-        3rdparty
-        3rdparty/khronos
-)
+    src
+    3rdparty
+    3rdparty/khronos
+    )
 
 target_compile_definitions(bgfx PUBLIC
     $<$<CONFIG:Debug>:BGFX_CONFIG_DEBUG=1>
     $<$<CONFIG:Release>:BGFX_CONFIG_DEBUG=0>
     $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
-)
+    )
 
-target_link_libraries(bgfx PUBLIC bkaradzic::bx)
+target_link_libraries(bgfx PUBLIC bkaradzic::bx bkaradzic::bimg)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
@@ -70,10 +70,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_RENDERER_METAL=1)
     target_link_libraries(bgfx
         PUBLIC
-            ${COCOA_LIBRARY}
-            metal::metal
-            quartzcore::quartzcore
-    )
+        ${COCOA_LIBRARY}
+        metal::metal
+        quartzcore::quartzcore
+        )
 
 elseif(UNIX AND NOT EMSCRIPTEN)
 
@@ -157,7 +157,6 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
         3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
         3rdparty/glslang/glslang/MachineIndependent/reflection.cpp
-        #3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp
         3rdparty/glslang/hlsl/hlslAttributes.cpp
         3rdparty/glslang/hlsl/hlslGrammar.cpp
         3rdparty/glslang/hlsl/hlslOpMap.cpp
@@ -166,18 +165,18 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glslang/hlsl/hlslScanContext.cpp
         3rdparty/glslang/hlsl/hlslTokenStream.cpp
         3rdparty/glslang/hlsl/pch.cpp
-    )
-	if (MSVC)
-		target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Windows/ossource.cpp)
-	elseif(UNIX)
-		target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp)
-	endif()
+        )
+    if (MSVC)
+        target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Windows/ossource.cpp)
+    elseif(UNIX)
+        target_sources(glslang PUBLIC ${PROJECT_SOURCE_DIR}/3rdparty/glslang/glslang/OSDependent/Unix/ossource.cpp)
+    endif()
     target_compile_definitions(glslang PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS ENABLE_OPT=1 ENABLE_HLSL=1)
-    target_include_directories(glslang PUBLIC 
-        3rdparty/glslang 
+    target_include_directories(glslang PUBLIC
+        3rdparty/glslang
         3rdparty/spirv-tools/include
         3rdparty/spirv-tools/source
-    )
+        )
     
     add_library(fcpp
         3rdparty/fcpp/cpp1.c
@@ -186,10 +185,10 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/fcpp/cpp4.c
         3rdparty/fcpp/cpp5.c
         3rdparty/fcpp/cpp6.c
-    )
+        )
     target_include_directories(fcpp PUBLIC 3rdparty/fcpp)
     
-    add_library(glsl-optimizer 
+    add_library(glsl-optimizer
         3rdparty/glsl-optimizer/src/glsl/ast_array_index.cpp
         3rdparty/glsl-optimizer/src/glsl/ast_expr.cpp
         3rdparty/glsl-optimizer/src/glsl/ast_function.cpp
@@ -294,16 +293,16 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glsl-optimizer/src/mesa/program/symbol_table.c
         3rdparty/glsl-optimizer/src/util/hash_table.c
         3rdparty/glsl-optimizer/src/util/ralloc.c
-    )
+        )
     target_compile_definitions(glsl-optimizer PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS)
-    target_include_directories(glsl-optimizer 
-        PUBLIC 
-            3rdparty/glsl-optimizer/include
-            3rdparty/glsl-optimizer/src/glsl
-            3rdparty/glsl-optimizer/src
-            3rdparty/glsl-optimizer/src/mesa
-            3rdparty/glsl-optimizer/src/mapi
-    )
+    target_include_directories(glsl-optimizer
+        PUBLIC
+        3rdparty/glsl-optimizer/include
+        3rdparty/glsl-optimizer/src/glsl
+        3rdparty/glsl-optimizer/src
+        3rdparty/glsl-optimizer/src/mesa
+        3rdparty/glsl-optimizer/src/mapi
+        )
     
     add_library(spirv-opt
         3rdparty/spirv-tools/source/assembly_grammar.cpp
@@ -449,15 +448,15 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/val/validate_primitives.cpp
         3rdparty/spirv-tools/source/val/validate_type.cpp
         3rdparty/spirv-tools/source/val/validation_state.cpp
-    )
+        )
     target_compile_definitions(spirv-opt PUBLIC __STDC_LIMIT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS)
-    target_include_directories(spirv-opt PUBLIC 
+    target_include_directories(spirv-opt PUBLIC
         3rdparty/spirv-tools/include
         3rdparty/spirv-tools/include/generated
         3rdparty/spirv-tools/source
         3rdparty/spirv-tools
         3rdparty/spirv-tools/external/SPIRV-Headers/include
-    )
+        )
 
     ########################
     # BGFX Geometry Compiler
@@ -470,7 +469,7 @@ if (BGFX_BUILD_TOOLS)
         examples/common/bounds.cpp
         src/vertexdecl.cpp
         tools/geometryc/geometryc.cpp
-    )
+        )
     target_compile_definitions(geometryc PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(geometryc PRIVATE include 3rdparty examples/common)
     target_link_libraries(geometryc PRIVATE bkaradzic::bx)
@@ -487,7 +486,7 @@ if (BGFX_BUILD_TOOLS)
         tools/shaderc/shaderc_hlsl.cpp
         tools/shaderc/shaderc_pssl.cpp
         tools/shaderc/shaderc_spirv.cpp
-    )
+        )
     target_compile_definitions(shaderc PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(shaderc PRIVATE include 3rdparty/glslang/glslang/Include 3rdparty/glslang/glslang/Public)
     target_link_libraries(shaderc PRIVATE bkaradzic::bx fcpp glslang glsl-optimizer spirv-opt)
@@ -530,7 +529,7 @@ if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
         examples/common/nanovg/nanovg.cpp
         examples/common/nanovg/nanovg_bgfx.cpp
         examples/common/ps/particle_system.cpp
-    )
+        )
     target_compile_definitions(example-common PUBLIC ENTRY_CONFIG_USE_SDL=1 __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(example-common PUBLIC include 3rdparty)
     target_link_libraries(example-common PUBLIC bkaradzic::bx bkaradzic::bimg SDL2::SDL2 SDL2::SDL2main)
@@ -596,7 +595,7 @@ if (BGFX_BUILD_EXAMPLES)
         examples/36-sky/sky.cpp
         examples/37-gpudrivenrendering/gpudrivenrendering.cpp
         examples/38-bloom/bloom.cpp
-    )
+        )
     target_compile_definitions(examples PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(examples PRIVATE include 3rdparty examples/common)
     target_link_libraries(examples PRIVATE example-common example-glue bgfx bkaradzic::bimg_decode bkaradzic::bimg bkaradzic::bx)
@@ -622,7 +621,7 @@ write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfigVersion.cmake
     VERSION ${PACKAGE_VERSION}
     COMPATIBILITY AnyNewerVersion
-)
+    )
 
 # Create the Config file.
 include(CMakePackageConfigHelpers)
@@ -630,13 +629,13 @@ configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/bgfxConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfig.cmake
     INSTALL_DESTINATION ${ConfigPackageLocation}
-)
+    )
 
 # Install the different headers and libraries.
 install(
     DIRECTORY include/bgfx
     DESTINATION include COMPONENT Development
-)
+    )
 
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
@@ -646,7 +645,7 @@ install(TARGETS bgfx
     BUNDLE DESTINATION bin COMPONENT Runtime
     PUBLIC_HEADER DESTINATION include COMPONENT Development
     BUNDLE DESTINATION bin COMPONENT Runtime
-)
+    )
 
 if (BGFX_BUILD_TOOLS)
     install(TARGETS geometryc shaderc
@@ -657,7 +656,7 @@ if (BGFX_BUILD_TOOLS)
         BUNDLE DESTINATION bin COMPONENT Runtime
         PUBLIC_HEADER DESTINATION include COMPONENT Development
         BUNDLE DESTINATION bin COMPONENT Runtime
-    )
+        )
 endif()
 
 if (BGFX_BUILD_EXAMPLES)
@@ -669,7 +668,7 @@ if (BGFX_BUILD_EXAMPLES)
         BUNDLE DESTINATION bin COMPONENT Runtime
         PUBLIC_HEADER DESTINATION include COMPONENT Development
         BUNDLE DESTINATION bin COMPONENT Runtime
-    )
+        )
 endif()
 
 # Install the generated CMake files.
@@ -677,12 +676,12 @@ install(
     EXPORT ${targets_export_name}
     NAMESPACE "bkaradzic::"
     DESTINATION ${ConfigPackageLocation}
-)
+    )
 
 install(
     FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfigVersion.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfigVersion.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/bgfxConfig.cmake
     DESTINATION
-        ${ConfigPackageLocation}
-)
+    ${ConfigPackageLocation}
+    )
