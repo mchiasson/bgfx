@@ -5776,12 +5776,15 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 				bx::write(&writer
 					, "#version 430\n"
-					  "#define texture2DLod    textureLod\n"
-					  "#define texture3DLod    textureLod\n"
-					  "#define textureCubeLod  textureLod\n"
-					  "#define texture2DGrad   textureGrad\n"
-					  "#define texture3DGrad   textureGrad\n"
-					  "#define textureCubeGrad textureGrad\n"
+					  "#define texture2DLod             textureLod\n"
+					  "#define texture2DLodOffset       textureLodOffset\n"
+					  "#define texture2DArrayLod        textureLod\n"
+					  "#define texture2DArrayLodOffset  textureLodOffset\n"
+					  "#define texture3DLod             textureLod\n"
+					  "#define textureCubeLod           textureLod\n"
+					  "#define texture2DGrad            textureGrad\n"
+					  "#define texture3DGrad            textureGrad\n"
+					  "#define textureCubeGrad          textureGrad\n"
 					);
 
 				bx::write(&writer, code.getPtr()+bx::strLen("#version 430"), codeLen);
@@ -6569,24 +6572,16 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 								case Binding::Image:
 									{
-										if (Access::Read == bind.m_access)
-										{
-											TextureGL& texture = m_textures[bind.m_idx];
-											texture.commit(ii, uint32_t(texture.m_flags), _render->m_colorPalette);
-										}
-										else
-										{
-											const TextureGL& texture = m_textures[bind.m_idx];
-											GL_CHECK(glBindImageTexture(ii
-												, texture.m_id
-												, bind.m_mip
-												, texture.isCubeMap() ? GL_TRUE : GL_FALSE
-												, 0
-												, s_access[bind.m_access]
-												, s_imageFormat[bind.m_format])
-												);
-											barrier |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-										}
+										const TextureGL& texture = m_textures[bind.m_idx];
+										GL_CHECK(glBindImageTexture(ii
+											, texture.m_id
+											, bind.m_mip
+											, texture.isCubeMap() || texture.m_target == GL_TEXTURE_2D_ARRAY ? GL_TRUE : GL_FALSE
+											, 0
+											, s_access[bind.m_access]
+											, s_imageFormat[bind.m_format])
+											);
+										barrier |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 									}
 									break;
 
