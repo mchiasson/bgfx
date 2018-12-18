@@ -177,7 +177,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/include
         3rdparty/spirv-tools/source
         )
-    
+
     add_library(fcpp
         3rdparty/fcpp/cpp1.c
         3rdparty/fcpp/cpp2.c
@@ -187,7 +187,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/fcpp/cpp6.c
         )
     target_include_directories(fcpp PUBLIC 3rdparty/fcpp)
-    
+
     add_library(glsl-optimizer
         3rdparty/glsl-optimizer/src/glsl/ast_array_index.cpp
         3rdparty/glsl-optimizer/src/glsl/ast_expr.cpp
@@ -303,7 +303,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glsl-optimizer/src/mesa
         3rdparty/glsl-optimizer/src/mapi
         )
-    
+
     add_library(spirv-opt
         3rdparty/spirv-tools/source/assembly_grammar.cpp
         3rdparty/spirv-tools/source/binary.cpp
@@ -497,7 +497,7 @@ if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
 
     hunter_add_package(SDL2)
     find_package(SDL2 CONFIG REQUIRED)
-    
+
     add_library(example-common
         3rdparty/dear-imgui/imgui.cpp
         3rdparty/dear-imgui/imgui_demo.cpp
@@ -553,7 +553,7 @@ if (BGFX_BUILD_EXAMPLES)
     target_compile_definitions(example-glue PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(example-glue PUBLIC include 3rdparty)
     target_link_libraries(example-glue PUBLIC bkaradzic::bx bkaradzic::bimg)
-    
+
     add_executable(examples
         examples/00-helloworld/helloworld.cpp
         examples/01-cubes/cubes.cpp
@@ -632,10 +632,8 @@ configure_package_config_file(
     )
 
 # Install the different headers and libraries.
-install(
-    DIRECTORY include/bgfx
-    DESTINATION include COMPONENT Development
-    )
+install(DIRECTORY include/bgfx DESTINATION include COMPONENT Development)
+install(FILES src/bgfx_shader.sh DESTINATION include COMPONENT Development)
 
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
