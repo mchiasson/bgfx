@@ -633,7 +633,7 @@ configure_package_config_file(
 
 # Install the different headers and libraries.
 install(DIRECTORY include/bgfx DESTINATION include COMPONENT Development)
-install(FILES src/bgfx_shader.sh DESTINATION include COMPONENT Development)
+install(FILES src/bgfx_shader.sh DESTINATION include/bgfx COMPONENT Development)
 
 install(TARGETS bgfx
     EXPORT ${targets_export_name}
