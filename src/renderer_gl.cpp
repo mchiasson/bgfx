@@ -10,6 +10,10 @@
 #	include <bx/timer.h>
 #	include <bx/uint32_t.h>
 
+#ifndef BGFX_USE_GL_STATE_CACHE
+#define BGFX_USE_GL_STATE_CACHE 1
+#endif
+
 namespace bgfx { namespace gl
 {
 	static char s_viewName[BGFX_CONFIG_MAX_VIEWS][BGFX_CONFIG_MAX_VIEW_NAME];
@@ -1740,9 +1744,16 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			, m_msaaBackBufferFbo(0)
 		{
 			bx::memSet(m_msaaBackBufferRbos, 0, sizeof(m_msaaBackBufferRbos) );
+
+#if BGFX_USE_GL_STATE_CACHE
+			// From https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glEnable.xhtml :
+			// The initial value for each capability with the exception of GL_DITHER and GL_MULTISAMPLE is GL_FALSE. The initial value for GL_DITHER and GL_MULTISAMPLE is GL_TRUE.
+			m_currentState[GL_DITHER] = true;
+			m_currentState[GL_MULTISAMPLE] = true;
+#endif
 		}
 
-		~RendererContextGL()
+		virtual ~RendererContextGL() override
 		{
 		}
 
@@ -2511,7 +2522,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 				if (s_extension[Extension::ARB_seamless_cube_map].m_supported)
 				{
-					GL_CHECK(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS) );
+					GL_CHECK(gl__Enable(GL_TEXTURE_CUBE_MAP_SEAMLESS) );
 				}
 
 				if (NULL == glInsertEventMarker
@@ -2570,7 +2581,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		{
 			if (m_vaoSupport)
 			{
-				GL_CHECK(glBindVertexArray(0) );
+				GL_CHECK(gl__BindVertexArray(0) );
 				GL_CHECK(glDeleteVertexArrays(1, &m_vao) );
 				m_vao = 0;
 			}
@@ -2751,7 +2762,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				const TextureGL& texture = m_textures[_handle.idx];
 				const bool compressed    = bimg::isCompressed(bimg::TextureFormat::Enum(texture.m_textureFormat) );
 
-				GL_CHECK(glBindTexture(texture.m_target, texture.m_id) );
+				GL_CHECK(gl__BindTexture(texture.m_target, texture.m_id) );
 
 				if (compressed)
 				{
@@ -2770,7 +2781,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						) );
 				}
 
-				GL_CHECK(glBindTexture(texture.m_target, 0) );
+				GL_CHECK(gl__BindTexture(texture.m_target, 0) );
 			}
 			else
 			{
@@ -3006,22 +3017,22 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		{
 			if (0 != m_vao)
 			{
-				GL_CHECK(glBindVertexArray(m_vao) );
+				GL_CHECK(gl__BindVertexArray(m_vao) );
 			}
 
 			uint32_t width  = m_resolution.width;
 			uint32_t height = m_resolution.height;
 
 			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_backBufferFbo) );
-			GL_CHECK(glViewport(0, 0, width, height) );
+			GL_CHECK(gl__Viewport(0, 0, width, height) );
 
-			GL_CHECK(glDisable(GL_SCISSOR_TEST) );
-			GL_CHECK(glDisable(GL_STENCIL_TEST) );
-			GL_CHECK(glDisable(GL_DEPTH_TEST) );
-			GL_CHECK(glDepthFunc(GL_ALWAYS) );
-			GL_CHECK(glDisable(GL_CULL_FACE) );
-			GL_CHECK(glDisable(GL_BLEND) );
-			GL_CHECK(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE) );
+			GL_CHECK(gl__Disable(GL_SCISSOR_TEST) );
+			GL_CHECK(gl__Disable(GL_STENCIL_TEST) );
+			GL_CHECK(gl__Disable(GL_DEPTH_TEST) );
+			GL_CHECK(gl__DepthFunc(GL_ALWAYS) );
+			GL_CHECK(gl__Disable(GL_CULL_FACE) );
+			GL_CHECK(gl__Disable(GL_BLEND) );
+			GL_CHECK(gl__ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE) );
 
 			ProgramGL& program = m_program[_blitter.m_program.idx];
 			GL_CHECK(glUseProgram(program.m_id) );
@@ -3036,8 +3047,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				, proj
 				) );
 
-			GL_CHECK(glActiveTexture(GL_TEXTURE0) );
-			GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_textures[_blitter.m_texture.idx].m_id) );
+			GL_CHECK(gl__ActiveTexture(GL_TEXTURE0) );
+			GL_CHECK(gl__BindTexture(GL_TEXTURE_2D, m_textures[_blitter.m_texture.idx].m_id) );
 
 			if (!BX_ENABLED(BX_PLATFORM_OSX) )
 			{
@@ -3061,10 +3072,10 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				m_vertexBuffers[_blitter.m_vb->handle.idx].update(0, numVertices*_blitter.m_decl.m_stride, _blitter.m_vb->data);
 
 				VertexBufferGL& vb = m_vertexBuffers[_blitter.m_vb->handle.idx];
-				GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
+				GL_CHECK(gl__BindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
 
 				IndexBufferGL& ib = m_indexBuffers[_blitter.m_ib->handle.idx];
-				GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.m_id) );
+				GL_CHECK(gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.m_id) );
 
 				ProgramGL& program = m_program[_blitter.m_program.idx];
 				program.bindAttributesBegin();
@@ -3090,11 +3101,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			{
 				if (!!(_resolution.reset & BGFX_RESET_DEPTH_CLAMP) )
 				{
-					GL_CHECK(glEnable(GL_DEPTH_CLAMP) );
+					GL_CHECK(gl__Enable(GL_DEPTH_CLAMP) );
 				}
 				else
 				{
-					GL_CHECK(glDisable(GL_DEPTH_CLAMP) );
+					GL_CHECK(gl__Disable(GL_DEPTH_CLAMP) );
 				}
 			}
 
@@ -3177,11 +3188,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				{
 					if (0 != (m_resolution.reset & BGFX_RESET_SRGB_BACKBUFFER) )
 					{
-						GL_CHECK(glEnable(GL_FRAMEBUFFER_SRGB) );
+						GL_CHECK(gl__Enable(GL_FRAMEBUFFER_SRGB) );
 					}
 					else
 					{
-						GL_CHECK(glDisable(GL_FRAMEBUFFER_SRGB) );
+						GL_CHECK(gl__Disable(GL_FRAMEBUFFER_SRGB) );
 					}
 				}
 			}
@@ -3273,7 +3284,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			if (m_backBufferFbo != m_msaaBackBufferFbo // iOS
 			&&  0 != m_msaaBackBufferFbo)
 			{
-				GL_CHECK(glDisable(GL_SCISSOR_TEST) );
+				GL_CHECK(gl__Disable(GL_SCISSOR_TEST) );
 				GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_backBufferFbo) );
 				GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, m_msaaBackBufferFbo) );
 				GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) );
@@ -3666,7 +3677,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						const float gg = rgba[1];
 						const float bb = rgba[2];
 						const float aa = rgba[3];
-						GL_CHECK(glClearColor(rr, gg, bb, aa) );
+						GL_CHECK(gl__ClearColor(rr, gg, bb, aa) );
 					}
 					else
 					{
@@ -3674,32 +3685,32 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						float gg = _clear.m_index[1]*1.0f/255.0f;
 						float bb = _clear.m_index[2]*1.0f/255.0f;
 						float aa = _clear.m_index[3]*1.0f/255.0f;
-						GL_CHECK(glClearColor(rr, gg, bb, aa) );
+						GL_CHECK(gl__ClearColor(rr, gg, bb, aa) );
 					}
 
 					flags |= GL_COLOR_BUFFER_BIT;
-					GL_CHECK(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE) );
+					GL_CHECK(gl__ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE) );
 				}
 
 				if (BGFX_CLEAR_DEPTH & _clear.m_flags)
 				{
 					flags |= GL_DEPTH_BUFFER_BIT;
-					GL_CHECK(glClearDepth(_clear.m_depth) );
-					GL_CHECK(glDepthMask(GL_TRUE) );
+					GL_CHECK(gl__ClearDepth(_clear.m_depth) );
+					GL_CHECK(gl__DepthMask(GL_TRUE) );
 				}
 
 				if (BGFX_CLEAR_STENCIL & _clear.m_flags)
 				{
 					flags |= GL_STENCIL_BUFFER_BIT;
-					GL_CHECK(glClearStencil(_clear.m_stencil) );
+					GL_CHECK(gl__ClearStencil(_clear.m_stencil) );
 				}
 
 				if (0 != flags)
 				{
-					GL_CHECK(glEnable(GL_SCISSOR_TEST) );
-					GL_CHECK(glScissor(_rect.m_x, _height-_rect.m_height-_rect.m_y, _rect.m_width, _rect.m_height) );
+					GL_CHECK(gl__Enable(GL_SCISSOR_TEST) );
+					GL_CHECK(gl__Scissor(_rect.m_x, _height-_rect.m_height-_rect.m_y, _rect.m_width, _rect.m_height) );
 					GL_CHECK(glClear(flags) );
-					GL_CHECK(glDisable(GL_SCISSOR_TEST) );
+					GL_CHECK(gl__Disable(GL_SCISSOR_TEST) );
 				}
 			}
 			else
@@ -3707,36 +3718,36 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				const GLuint defaultVao = m_vao;
 				if (0 != defaultVao)
 				{
-					GL_CHECK(glBindVertexArray(defaultVao) );
+					GL_CHECK(gl__BindVertexArray(defaultVao) );
 				}
 
-				GL_CHECK(glDisable(GL_SCISSOR_TEST) );
-				GL_CHECK(glDisable(GL_CULL_FACE) );
-				GL_CHECK(glDisable(GL_BLEND) );
+				GL_CHECK(gl__Disable(GL_SCISSOR_TEST) );
+				GL_CHECK(gl__Disable(GL_CULL_FACE) );
+				GL_CHECK(gl__Disable(GL_BLEND) );
 
 				GLboolean colorMask = !!(BGFX_CLEAR_COLOR & _clear.m_flags);
-				GL_CHECK(glColorMask(colorMask, colorMask, colorMask, colorMask) );
+				GL_CHECK(gl__ColorMask(colorMask, colorMask, colorMask, colorMask) );
 
 				if (BGFX_CLEAR_DEPTH & _clear.m_flags)
 				{
-					GL_CHECK(glEnable(GL_DEPTH_TEST) );
-					GL_CHECK(glDepthFunc(GL_ALWAYS) );
-					GL_CHECK(glDepthMask(GL_TRUE) );
+					GL_CHECK(gl__Enable(GL_DEPTH_TEST) );
+					GL_CHECK(gl__DepthFunc(GL_ALWAYS) );
+					GL_CHECK(gl__DepthMask(GL_TRUE) );
 				}
 				else
 				{
-					GL_CHECK(glDisable(GL_DEPTH_TEST) );
+					GL_CHECK(gl__Disable(GL_DEPTH_TEST) );
 				}
 
 				if (BGFX_CLEAR_STENCIL & _clear.m_flags)
 				{
-					GL_CHECK(glEnable(GL_STENCIL_TEST) );
-					GL_CHECK(glStencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, _clear.m_stencil,  0xff) );
-					GL_CHECK(glStencilOpSeparate(GL_FRONT_AND_BACK, GL_REPLACE, GL_REPLACE, GL_REPLACE) );
+					GL_CHECK(gl__Enable(GL_STENCIL_TEST) );
+					GL_CHECK(gl__StencilFuncSeparate(GL_FRONT_AND_BACK, GL_ALWAYS, _clear.m_stencil,  0xff) );
+					GL_CHECK(gl__StencilOpSeparate(GL_FRONT_AND_BACK, GL_REPLACE, GL_REPLACE, GL_REPLACE) );
 				}
 				else
 				{
-					GL_CHECK(glDisable(GL_STENCIL_TEST) );
+					GL_CHECK(gl__Disable(GL_STENCIL_TEST) );
 				}
 
 				VertexBufferGL& vb = m_vertexBuffers[_clearQuad.m_vb->handle.idx];
@@ -3774,7 +3785,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 				vb.update(0, 4*_clearQuad.m_decl.m_stride, _clearQuad.m_vb->data);
 
-				GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
+				GL_CHECK(gl__BindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
 
 				ProgramGL& program = m_program[_clearQuad.m_program[numMrt-1].idx];
 				GL_CHECK(glUseProgram(program.m_id) );
@@ -3816,6 +3827,536 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					) );
 			}
 		}
+
+		void gl__ActiveTexture(GLenum texture)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentActiveTexture != texture)
+			{
+				m_currentActiveTexture = texture;
+				glActiveTexture(texture);
+			}
+#else
+			glActiveTexture(texture);
+#endif
+		}
+
+		void gl__BindTexture(GLenum target, GLuint texture)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			GLuint &currTexture = m_currentTextureBindings[m_currentActiveTexture][target];
+			if (currTexture != texture)
+			{
+				currTexture = texture;
+				glBindTexture(target, texture);
+			}
+#else
+			glBindTexture(target, texture);
+#endif
+		}
+
+		void gl__BindBuffer(GLenum target, GLuint buffer)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			GLuint &currBuffer = m_currentBufferBinding[target];
+			if (currBuffer != buffer)
+			{
+				currBuffer = buffer;
+				glBindBuffer(target, buffer);
+			}
+#else
+			glBindBuffer(target, buffer);
+#endif
+		}
+
+		void gl__BindVertexArray(GLuint vertexArray)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentVertexArray != vertexArray)
+			{
+				m_currentVertexArray = vertexArray;
+				glBindVertexArray(vertexArray);
+			}
+#else
+			glBindVertexArray(vertexArray);
+#endif
+		}
+
+		void gl__EnableVertexAttribArray(GLuint index)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &enabled = m_currentVertexAttribArrayState[index];
+			if (!enabled)
+			{
+				enabled = true;
+				glEnableVertexAttribArray(index);
+			}
+#else
+			glEnableVertexAttribArray(index);
+#endif
+		}
+
+		void gl__DisableVertexAttribArray(GLuint index)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &enabled = m_currentVertexAttribArrayState[index];
+			if (enabled)
+			{
+				enabled = false;
+				glDisableVertexAttribArray(index);
+			}
+#else
+			glDisableVertexAttribArray(index);
+#endif
+		}
+
+		void gl__VertexAttribDivisor(GLuint index, GLuint divisor)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			GLuint &currDivisor = m_currentVertexAttribDivisor[index];
+			if (currDivisor != divisor)
+			{
+				currDivisor = divisor;
+				glVertexAttribDivisor(index, divisor);
+			}
+#else
+			glVertexAttribDivisor(index, divisor);
+#endif
+		}
+
+		void gl__Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentViewport.m_x != x ||
+				m_currentViewport.m_y != y ||
+				m_currentViewport.m_width != width ||
+				m_currentViewport.m_height != height)
+			{
+				m_currentViewport.set(uint16_t(x), uint16_t(y), uint16_t(width), uint16_t(height));
+				glViewport(x, y, width, height);
+			}
+#else
+			glViewport(x, y, width, height);
+#endif
+		}
+
+		void gl__Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentScissor.m_x != x ||
+				m_currentScissor.m_y != y ||
+				m_currentScissor.m_width != width ||
+				m_currentScissor.m_height != height)
+			{
+				m_currentScissor.set(uint16_t(x), uint16_t(y), uint16_t(width), uint16_t(height));
+				glScissor(x, y, width, height);
+			}
+#else
+			glScissor(x, y, width, height);
+#endif
+		}
+
+		void gl__PointSize(GLfloat size)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if ( m_currentPointSize != size)
+			{
+				m_currentPointSize = size;
+				glPointSize(size);
+			}
+#else
+			glPointSize(size);
+#endif
+		}
+
+		void gl__PolygonMode(GLenum face, GLenum mode)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+            if (face == GL_FRONT && m_currentFrontPolygonMode != mode)
+			{
+				m_currentFrontPolygonMode = mode;
+				glPolygonMode(face, mode);
+			}
+			else if (face == GL_BACK && m_currentBackPolygonMode != mode)
+			{
+				m_currentBackPolygonMode = mode;
+				glPolygonMode(face, mode);
+			}
+			else if (face == GL_FRONT_AND_BACK && (m_currentFrontPolygonMode != mode || m_currentBackPolygonMode != mode))
+			{
+				m_currentFrontPolygonMode = mode;
+				m_currentBackPolygonMode = mode;
+				glPolygonMode(face, mode);
+			}
+#else
+			glPolygonMode(face, mode);
+#endif
+		}
+
+		void gl__Enable(GLenum cap)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &currCap = m_currentState[cap];
+			if (!currCap)
+			{
+				currCap = true;
+				glEnable(cap);
+			}
+#else
+			glEnable(cap);
+#endif
+		}
+
+		void gl__Disable(GLenum cap)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &currCap = m_currentState[cap];
+			if (currCap)
+			{
+				currCap = false;
+				glDisable(cap);
+			}
+#else
+			glDisable(cap);
+#endif
+		}
+
+		void gl__Enablei(GLenum cap, GLuint index)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &currCap = m_currentIndexedState[cap][index];
+			if (!currCap)
+			{
+				currCap = true;
+				glEnablei(cap, index);
+			}
+#else
+			glEnablei(cap, index);
+#endif
+		}
+
+		void gl__Disablei(GLenum cap, GLuint index)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			bool &currCap = m_currentIndexedState[cap][index];
+			if (currCap)
+			{
+				currCap = false;
+				glDisablei(cap, index);
+			}
+#else
+			glDisablei(cap, index);
+#endif
+		}
+
+		void gl__DepthFunc(GLenum func)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentDepthFunc != func)
+			{
+				m_currentDepthFunc = func;
+				glDepthFunc(func);
+			}
+#else
+			glDepthFunc(func);
+#endif
+		}
+
+		void gl__DepthMask(GLboolean mask)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentDepthMask != mask)
+			{
+				m_currentDepthMask = mask;
+				glDepthMask(mask);
+			}
+#else
+			glDepthMask(mask);
+#endif
+		}
+
+		void gl__ClearDepth(GLdouble depth)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentClearDepth != depth)
+			{
+				m_currentClearDepth = depth;
+				glClearDepth(depth);
+			}
+#else
+			glClearDepth(depth);
+#endif
+		}
+
+		void gl__ClearStencil(GLint s)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentClearStencil != s)
+			{
+				m_currentClearStencil = s;
+				glClearStencil(s);
+			}
+#else
+			glClearStencil(s);
+#endif
+		}
+
+		void gl__ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentColorMask[0] != red ||
+				m_currentColorMask[1] != green ||
+				m_currentColorMask[2] != blue ||
+				m_currentColorMask[3] != alpha)
+			{
+				m_currentColorMask[0] = red;
+				m_currentColorMask[1] = green;
+				m_currentColorMask[2] = blue;
+				m_currentColorMask[3] = alpha;
+
+				glColorMask(red, green, blue, alpha);
+			}
+#else
+			glColorMask(red, green, blue, alpha);
+#endif
+		}
+
+		void gl__ClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentClearColor[0] != red ||
+				m_currentClearColor[1] != green ||
+				m_currentClearColor[2] != blue ||
+				m_currentClearColor[3] != alpha)
+			{
+				m_currentClearColor[0] = red;
+				m_currentClearColor[1] = green;
+				m_currentClearColor[2] = blue;
+				m_currentClearColor[3] = alpha;
+
+				glClearColor(red, green, blue, alpha);
+			}
+#else
+			glClearColor(red, green, blue, alpha);
+#endif
+		}
+
+		void gl__BlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentBlendFunc.srcRGB != srcRGB ||
+				m_currentBlendFunc.dstRGB != dstRGB ||
+				m_currentBlendFunc.srcAlpha != srcAlpha ||
+				m_currentBlendFunc.dstAlpha != dstAlpha)
+			{
+				m_currentBlendFunc.srcRGB = srcRGB;
+				m_currentBlendFunc.dstRGB = dstRGB;
+				m_currentBlendFunc.srcAlpha = srcAlpha;
+				m_currentBlendFunc.dstAlpha = dstAlpha;
+
+				glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+			}
+#else
+			glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+#endif
+		}
+
+		void gl__BlendFuncSeparatei(GLuint index, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			BlendFunc &currentBlendFunc = m_currentIndexedBlendFunc[index];
+			if (currentBlendFunc.srcRGB != srcRGB ||
+				currentBlendFunc.dstRGB != dstRGB ||
+				currentBlendFunc.srcAlpha != srcAlpha ||
+				currentBlendFunc.dstAlpha != dstAlpha)
+			{
+				currentBlendFunc.srcRGB = srcRGB;
+				currentBlendFunc.dstRGB = dstRGB;
+				currentBlendFunc.srcAlpha = srcAlpha;
+				currentBlendFunc.dstAlpha = dstAlpha;
+
+				glBlendFuncSeparatei(index, srcRGB, dstRGB, srcAlpha, dstAlpha);
+			}
+#else
+			glBlendFuncSeparatei(index, srcRGB, dstRGB, srcAlpha, dstAlpha);
+#endif
+		}
+
+		void gl__BlendFunci(GLuint index, GLenum src, GLenum dst)
+		{
+			gl__BlendFuncSeparatei(index, src, dst, src, dst);
+		}
+
+		void gl__BlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentBlendEquation.modeRGB != modeRGB ||
+				m_currentBlendEquation.modeAlpha != modeAlpha)
+			{
+
+				m_currentBlendEquation.modeRGB = modeRGB;
+				m_currentBlendEquation.modeAlpha = modeAlpha;
+
+				glBlendEquationSeparate(modeRGB, modeAlpha);
+			}
+#else
+			glBlendEquationSeparate(modeRGB, modeAlpha);
+#endif
+		}
+
+		void gl__BlendEquationSeparatei(GLuint index, GLenum modeRGB, GLenum modeAlpha)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			BlendEquation &currentBlendEquation = m_currentIndexedBlendEquation[index];
+			if (currentBlendEquation.modeRGB != modeRGB ||
+				currentBlendEquation.modeAlpha != modeAlpha)
+			{
+
+				currentBlendEquation.modeRGB = modeRGB;
+				currentBlendEquation.modeAlpha = modeAlpha;
+
+				glBlendEquationSeparatei(index, modeRGB, modeAlpha);
+			}
+#else
+			glBlendEquationSeparatei(index, modeRGB, modeAlpha);
+#endif
+		}
+
+		void gl__BlendEquationi(GLuint index, GLenum mode)
+		{
+			gl__BlendEquationSeparatei(index, mode, mode);
+		}
+
+		void gl__FrontFace(GLenum mode)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentFrontFace != mode)
+			{
+				m_currentFrontFace = mode;
+				glFrontFace(mode);
+			}
+#else
+			glFrontFace(mode);
+#endif
+		}
+
+		void gl__CullFace(GLenum mode)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (m_currentCullFace != mode)
+			{
+				m_currentCullFace = mode;
+				glCullFace(mode);
+			}
+#else
+			glCullFace(mode);
+#endif
+		}
+
+		void gl__StencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (face == GL_FRONT)
+			{
+				if (m_currentFrontStencilFunc.func != func ||
+					m_currentFrontStencilFunc.ref != ref ||
+					m_currentFrontStencilFunc.mask != mask)
+				{
+					m_currentFrontStencilFunc.func = func;
+					m_currentFrontStencilFunc.ref = ref;
+					m_currentFrontStencilFunc.mask = mask;
+					glStencilFuncSeparate(face, func, ref, mask);
+				}
+
+			}
+			else if (face == GL_BACK)
+			{
+				if (m_currentBackStencilFunc.func != func ||
+					m_currentBackStencilFunc.ref != ref ||
+					m_currentBackStencilFunc.mask != mask)
+				{
+					m_currentBackStencilFunc.func = func;
+					m_currentBackStencilFunc.ref = ref;
+					m_currentBackStencilFunc.mask = mask;
+					glStencilFuncSeparate(face, func, ref, mask);
+				}
+
+			}
+			else if (face == GL_FRONT_AND_BACK)
+			{
+				if (m_currentFrontStencilFunc.func != func ||
+					m_currentFrontStencilFunc.ref != ref ||
+					m_currentFrontStencilFunc.mask != mask ||
+					m_currentBackStencilFunc.func != func ||
+					m_currentBackStencilFunc.ref != ref ||
+					m_currentBackStencilFunc.mask != mask)
+				{
+					m_currentFrontStencilFunc.func = func;
+					m_currentFrontStencilFunc.ref = ref;
+					m_currentFrontStencilFunc.mask = mask;
+					m_currentBackStencilFunc.func = func;
+					m_currentBackStencilFunc.ref = ref;
+					m_currentBackStencilFunc.mask = mask;
+					glStencilFuncSeparate(face, func, ref, mask);
+				}
+			}
+#else
+			glStencilFuncSeparate(face, func, ref, mask);
+#endif
+		}
+
+		void gl__StencilOpSeparate(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass)
+		{
+#if BGFX_USE_GL_STATE_CACHE
+			if (face == GL_FRONT)
+			{
+				if (m_currentFrontStencilOp.sfail != sfail ||
+					m_currentFrontStencilOp.dpfail != dpfail ||
+					m_currentFrontStencilOp.dppass != dppass)
+				{
+					m_currentFrontStencilOp.sfail = sfail;
+					m_currentFrontStencilOp.dpfail = dpfail;
+					m_currentFrontStencilOp.dppass = dppass;
+					glStencilOpSeparate(face, sfail, dpfail, dppass);
+				}
+
+			}
+			else if (face == GL_BACK)
+			{
+				if (m_currentBackStencilOp.sfail != sfail ||
+					m_currentBackStencilOp.dpfail != dpfail ||
+					m_currentBackStencilOp.dppass != dppass)
+				{
+					m_currentBackStencilOp.sfail = sfail;
+					m_currentBackStencilOp.dpfail = dpfail;
+					m_currentBackStencilOp.dppass = dppass;
+					glStencilOpSeparate(face, sfail, dpfail, dppass);
+				}
+
+			}
+			else if (face == GL_FRONT_AND_BACK)
+			{
+				if (m_currentFrontStencilOp.sfail != sfail ||
+					m_currentFrontStencilOp.dpfail != dpfail ||
+					m_currentFrontStencilOp.dppass != dppass ||
+					m_currentBackStencilOp.sfail != sfail ||
+					m_currentBackStencilOp.dpfail != dpfail ||
+					m_currentBackStencilOp.dppass != dppass)
+				{
+					m_currentFrontStencilOp.sfail = sfail;
+					m_currentFrontStencilOp.dpfail = dpfail;
+					m_currentFrontStencilOp.dppass = dppass;
+					m_currentBackStencilOp.sfail = sfail;
+					m_currentBackStencilOp.dpfail = dpfail;
+					m_currentBackStencilOp.dppass = dppass;
+					glStencilOpSeparate(face, sfail, dpfail, dppass);
+				}
+			}
+#else
+			glStencilOpSeparate(face, sfail, dpfail, dppass);
+#endif
+		}
+
 
 		void* m_renderdocdll;
 
@@ -3883,6 +4424,73 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		Workaround m_workaround;
 
 		GLuint m_currentFbo;
+
+#if BGFX_USE_GL_STATE_CACHE
+		using TextureBinding = stl::unordered_map<GLenum, GLuint>;
+		using ActiveTextureBinding = stl::unordered_map<GLenum, TextureBinding>;
+		using BufferBinding = stl::unordered_map<GLenum, GLuint>;
+		using VertexAttribArrayState = stl::unordered_map<GLuint, bool>;
+		using VertexAttribDivisor = stl::unordered_map<GLuint, GLuint>;
+		using State = stl::unordered_map<GLenum, bool>;
+		using IndexedState = stl::unordered_map<GLenum, stl::unordered_map<GLuint, bool> >;
+		struct BlendFunc
+		{
+			GLenum srcRGB = GL_ONE;
+			GLenum dstRGB = GL_ZERO;
+			GLenum srcAlpha = GL_ONE;
+			GLenum dstAlpha = GL_ZERO;
+		};
+		using IndexedBlendFunc = stl::unordered_map<GLuint, BlendFunc>;
+		struct BlendEquation
+		{
+			GLenum modeRGB = GL_FUNC_ADD;
+			GLenum modeAlpha = GL_FUNC_ADD;
+		};
+		using IndexedBlendEquation = stl::unordered_map<GLuint, BlendEquation>;
+		struct StencilFunc
+		{
+			GLenum func = GL_ALWAYS;
+			GLint ref = 0;
+			GLuint mask = 0xFFFFFFFF;
+		};
+		struct StencilOp
+		{
+			GLenum sfail = GL_KEEP;
+			GLenum dpfail = GL_KEEP;
+			GLenum dppass = GL_KEEP;
+		};
+
+		GLenum m_currentActiveTexture = GL_TEXTURE0;
+		ActiveTextureBinding m_currentTextureBindings;
+		BufferBinding m_currentBufferBinding;
+		GLuint m_currentVertexArray = 0;
+		VertexAttribArrayState m_currentVertexAttribArrayState;
+		VertexAttribDivisor m_currentVertexAttribDivisor;
+		Rect m_currentViewport;
+		Rect m_currentScissor;
+		GLfloat m_currentPointSize = 1;
+		GLenum m_currentFrontPolygonMode = GL_FILL;
+		GLenum m_currentBackPolygonMode  = GL_FILL;
+		State m_currentState;
+		IndexedState m_currentIndexedState;
+		GLenum m_currentDepthFunc = GL_LESS;
+		GLboolean m_currentDepthMask = GL_TRUE;
+		GLdouble m_currentClearDepth = 1;
+		GLint m_currentClearStencil = 0;
+		GLboolean m_currentColorMask[4] = {GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE};
+		GLfloat m_currentClearColor[4] = {0, 0, 0, 0};
+		BlendFunc m_currentBlendFunc;
+		IndexedBlendFunc m_currentIndexedBlendFunc;
+		BlendEquation m_currentBlendEquation;
+		IndexedBlendEquation m_currentIndexedBlendEquation;
+		GLenum m_currentFrontFace = GL_CCW;
+		GLenum m_currentCullFace = GL_BACK;
+		StencilFunc m_currentFrontStencilFunc;
+		StencilFunc m_currentBackStencilFunc;
+		StencilOp m_currentFrontStencilOp;
+		StencilOp m_currentBackStencilOp;
+#endif
+
 	};
 
 	RendererContextGL* s_renderGL;
@@ -3895,6 +4503,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			BX_DELETE(g_allocator, s_renderGL);
 			s_renderGL = NULL;
 		}
+
 		return s_renderGL;
 	}
 
@@ -4479,8 +5088,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			{
 				if (UINT16_MAX != _vertexDecl.m_attributes[attr])
 				{
-					GL_CHECK(glEnableVertexAttribArray(loc) );
-					GL_CHECK(glVertexAttribDivisor(loc, 0) );
+					GL_CHECK(s_renderGL->gl__EnableVertexAttribArray(loc) );
+					GL_CHECK(s_renderGL->gl__VertexAttribDivisor(loc, 0) );
 
 					uint32_t baseVertex = _baseVertex*_vertexDecl.m_stride + _vertexDecl.m_offset[attr];
 					if ( (BX_ENABLED(BGFX_CONFIG_RENDERER_OPENGL >= 30) ||  BX_ENABLED(BGFX_CONFIG_RENDERER_OPENGLES >= 31) )
@@ -4511,6 +5120,19 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		}
 	}
 
+	void ProgramGL::bindAttributesEnd()
+	{
+		for (uint32_t ii = 0, iiEnd = m_usedCount; ii < iiEnd; ++ii)
+		{
+			if (Attrib::Count != m_unboundUsedAttrib[ii])
+			{
+				Attrib::Enum attr = Attrib::Enum(m_unboundUsedAttrib[ii]);
+				GLint loc = m_attributes[attr];
+				GL_CHECK(s_renderGL->gl__DisableVertexAttribArray(loc) );
+			}
+		}
+	}
+
 	void ProgramGL::unbindAttributes()
 	{
 		for(uint32_t ii = 0, iiEnd = m_usedCount; ii < iiEnd; ++ii)
@@ -4519,7 +5141,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			{
 				Attrib::Enum attr = Attrib::Enum(m_used[ii]);
 				GLint loc = m_attributes[attr];
-				GL_CHECK(glDisableVertexAttribArray(loc));
+				GL_CHECK(s_renderGL->gl__DisableVertexAttribArray(loc));
 			}
 		}
 	}
@@ -4530,9 +5152,9 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		for (uint32_t ii = 0; 0xffff != m_instanceData[ii]; ++ii)
 		{
 			GLint loc = m_instanceData[ii];
-			GL_CHECK(glEnableVertexAttribArray(loc) );
+			GL_CHECK(s_renderGL->gl__EnableVertexAttribArray(loc) );
 			GL_CHECK(glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, _stride, (void*)(uintptr_t)baseVertex) );
-			GL_CHECK(glVertexAttribDivisor(loc, 1) );
+			GL_CHECK(s_renderGL->gl__VertexAttribDivisor(loc, 1) );
 			baseVertex += 16;
 		}
 	}
@@ -4542,19 +5164,93 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		for(uint32_t ii = 0; 0xffff != m_instanceData[ii]; ++ii)
 		{
 			GLint loc = m_instanceData[ii];
-			GL_CHECK(glDisableVertexAttribArray(loc));
+			GL_CHECK(s_renderGL->gl__DisableVertexAttribArray(loc));
 		}
+	}
+
+	void IndexBufferGL::create(uint32_t _size, void* _data, uint16_t _flags)
+	{
+		m_size  = _size;
+		m_flags = _flags;
+
+		GL_CHECK(glGenBuffers(1, &m_id) );
+		BX_CHECK(0 != m_id, "Failed to generate buffer id.");
+		GL_CHECK(s_renderGL->gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id) );
+		GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER
+			, _size
+			, _data
+			, (NULL==_data) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW
+			) );
+		GL_CHECK(s_renderGL->gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
+	}
+
+	void IndexBufferGL::update(uint32_t _offset, uint32_t _size, void* _data, bool _discard)
+	{
+		BX_CHECK(0 != m_id, "Updating invalid index buffer.");
+
+		if (_discard)
+		{
+			// orphan buffer...
+			destroy();
+			create(m_size, NULL, m_flags);
+		}
+
+		GL_CHECK(s_renderGL->gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id) );
+		GL_CHECK(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER
+			, _offset
+			, _size
+			, _data
+			) );
+		GL_CHECK(s_renderGL->gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
 	}
 
 	void IndexBufferGL::destroy()
 	{
-		GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
+		GL_CHECK(s_renderGL->gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
 		GL_CHECK(glDeleteBuffers(1, &m_id) );
+	}
+
+	void VertexBufferGL::create(uint32_t _size, void* _data, VertexDeclHandle _declHandle, uint16_t _flags)
+	{
+		m_size = _size;
+		m_decl = _declHandle;
+		const bool drawIndirect = 0 != (_flags & BGFX_BUFFER_DRAW_INDIRECT);
+
+		m_target = drawIndirect ? GL_DRAW_INDIRECT_BUFFER : GL_ARRAY_BUFFER;
+
+		GL_CHECK(glGenBuffers(1, &m_id) );
+		BX_CHECK(0 != m_id, "Failed to generate buffer id.");
+		GL_CHECK(s_renderGL->gl__BindBuffer(m_target, m_id) );
+		GL_CHECK(glBufferData(m_target
+			, _size
+			, _data
+			, (NULL==_data) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW
+			) );
+		GL_CHECK(s_renderGL->gl__BindBuffer(m_target, 0) );
+	}
+
+	void VertexBufferGL::update(uint32_t _offset, uint32_t _size, void* _data, bool _discard)
+	{
+		BX_CHECK(0 != m_id, "Updating invalid vertex buffer.");
+
+		if (_discard)
+		{
+			// orphan buffer...
+			destroy();
+			create(m_size, NULL, m_decl, 0);
+		}
+
+		GL_CHECK(s_renderGL->gl__BindBuffer(m_target, m_id) );
+		GL_CHECK(glBufferSubData(m_target
+			, _offset
+			, _size
+			, _data
+			) );
 	}
 
 	void VertexBufferGL::destroy()
 	{
-		GL_CHECK(glBindBuffer(m_target, 0) );
+		GL_CHECK(s_renderGL->gl__BindBuffer(m_target, 0) );
 		GL_CHECK(glDeleteBuffers(1, &m_id) );
 	}
 
@@ -4580,7 +5276,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		{
 			GL_CHECK(glGenTextures(1, &m_id) );
 			BX_CHECK(0 != m_id, "Failed to generate texture id.");
-			GL_CHECK(glBindTexture(_target, m_id) );
+			GL_CHECK(s_renderGL->gl__BindTexture(_target, m_id) );
 			GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1) );
 
 			const TextureFormatInfo& tfi = s_textureFormat[m_textureFormat];
@@ -4934,8 +5630,6 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				BX_FREE(g_allocator, temp);
 			}
 		}
-
-		GL_CHECK(glBindTexture(m_target, 0) );
 	}
 
 	void TextureGL::destroy()
@@ -4943,7 +5637,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		if (0 == (m_flags & BGFX_SAMPLER_INTERNAL_SHARED)
 		&&  0 != m_id)
 		{
-			GL_CHECK(glBindTexture(m_target, 0) );
+			GL_CHECK(s_renderGL->gl__BindTexture(m_target, 0) );
 			GL_CHECK(glDeleteTextures(1, &m_id) );
 			m_id = 0;
 		}
@@ -4968,7 +5662,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		const uint32_t rectpitch = _rect.m_width*bpp/8;
 		uint32_t srcpitch  = UINT16_MAX == _pitch ? rectpitch : _pitch;
 
-		GL_CHECK(glBindTexture(m_target, m_id) );
+		GL_CHECK(s_renderGL->gl__BindTexture(m_target, m_id) );
 		GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1) );
 
 		GLenum target = isCubeMap()
@@ -5176,8 +5870,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 			;
 		const uint32_t index = (flags & BGFX_SAMPLER_BORDER_COLOR_MASK) >> BGFX_SAMPLER_BORDER_COLOR_SHIFT;
 
-		GL_CHECK(glActiveTexture(GL_TEXTURE0+_stage) );
-		GL_CHECK(glBindTexture(m_target, m_id) );
+		GL_CHECK(s_renderGL->gl__ActiveTexture(GL_TEXTURE0+_stage) );
+		GL_CHECK(s_renderGL->gl__BindTexture(m_target, m_id) );
 
 		if (BX_ENABLED(BGFX_CONFIG_RENDERER_OPENGLES)
 		&&  BX_ENABLED(BGFX_CONFIG_RENDERER_OPENGLES < 30) )
@@ -5212,9 +5906,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		&&  1 < m_numMips
 		&&  0 != (_resolve & BGFX_RESOLVE_AUTO_GEN_MIPS) )
 		{
-			GL_CHECK(glBindTexture(m_target, m_id) );
+			GL_CHECK(s_renderGL->gl__BindTexture(m_target, m_id) );
 			GL_CHECK(glGenerateMipmap(m_target) );
-			GL_CHECK(glBindTexture(m_target, 0) );
 		}
 	}
 
@@ -6299,7 +6992,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		&&  m_vaoSupport)
 		{
 			m_vaoSupport = false;
-			GL_CHECK(glBindVertexArray(0) );
+			GL_CHECK(gl__BindVertexArray(0) );
 			GL_CHECK(glDeleteVertexArrays(1, &m_vao) );
 			m_vao = 0;
 		}
@@ -6309,11 +7002,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		const GLuint defaultVao = m_vao;
 		if (0 != defaultVao)
 		{
-			GL_CHECK(glBindVertexArray(defaultVao) );
+			GL_CHECK(gl__BindVertexArray(defaultVao) );
 		}
 
 		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_backBufferFbo) );
-		GL_CHECK(glFrontFace(GL_CW) );
+		GL_CHECK(gl__FrontFace(GL_CW) );
 
 		updateResolution(_render->m_resolution);
 
@@ -6371,7 +7064,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 		}
 		PrimInfo prim = s_primInfo[primIndex];
 
-		GL_CHECK(glPolygonMode(GL_FRONT_AND_BACK
+		GL_CHECK(gl__PolygonMode(GL_FRONT_AND_BACK
 			, _render->m_debug&BGFX_DEBUG_WIREFRAME
 			? GL_LINE
 			: GL_FILL
@@ -6463,7 +7156,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					viewHasScissor  = !scissorRect.isZero();
 					viewScissorRect = viewHasScissor ? scissorRect : viewState.m_rect;
 
-					GL_CHECK(glViewport(viewState.m_rect.m_x
+					GL_CHECK(gl__Viewport(viewState.m_rect.m_x
 						, resolutionHeight-viewState.m_rect.m_height-viewState.m_rect.m_y
 						, viewState.m_rect.m_width
 						, viewState.m_rect.m_height
@@ -6477,11 +7170,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						clearQuad(_clearQuad, viewState.m_rect, clear, resolutionHeight, _render->m_colorPalette);
 					}
 
-					GL_CHECK(glDisable(GL_STENCIL_TEST) );
-					GL_CHECK(glEnable(GL_DEPTH_TEST) );
-					GL_CHECK(glDepthFunc(GL_LESS) );
-					GL_CHECK(glEnable(GL_CULL_FACE) );
-					GL_CHECK(glDisable(GL_BLEND) );
+					GL_CHECK(gl__Disable(GL_STENCIL_TEST) );
+					GL_CHECK(gl__Enable(GL_DEPTH_TEST) );
+					GL_CHECK(gl__DepthFunc(GL_LESS) );
+					GL_CHECK(gl__Enable(GL_CULL_FACE) );
+					GL_CHECK(gl__Disable(GL_BLEND) );
 
 					submitBlit(bs, view);
 				}
@@ -6575,7 +7268,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 								if (currentState.m_indirectBuffer.idx != compute.m_indirectBuffer.idx)
 								{
 									currentState.m_indirectBuffer = compute.m_indirectBuffer;
-									GL_CHECK(glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, vb.m_id) );
+									GL_CHECK(gl__BindBuffer(GL_DISPATCH_INDIRECT_BUFFER, vb.m_id) );
 								}
 
 								uint32_t numDrawIndirect = UINT16_MAX == compute.m_numIndirect
@@ -6595,7 +7288,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 								if (isValid(currentState.m_indirectBuffer) )
 								{
 									currentState.m_indirectBuffer.idx = kInvalidHandle;
-									GL_CHECK(glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0) );
+									GL_CHECK(gl__BindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0) );
 								}
 
 								GL_CHECK(glDispatchCompute(compute.m_numX, compute.m_numY, compute.m_numZ) );
@@ -6666,17 +7359,17 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					currentBind.clear();
 				}
 
-				uint16_t scissor = draw.m_scissor;
-				if (currentState.m_scissor != scissor)
+				uint16_t scissorState = draw.m_scissor;
+				if (currentState.m_scissor != scissorState)
 				{
-					currentState.m_scissor = scissor;
+					currentState.m_scissor = scissorState;
 
-					if (UINT16_MAX == scissor)
+					if (UINT16_MAX == scissorState)
 					{
 						if (viewHasScissor)
 						{
-							GL_CHECK(glEnable(GL_SCISSOR_TEST) );
-							GL_CHECK(glScissor(viewScissorRect.m_x
+							GL_CHECK(gl__Enable(GL_SCISSOR_TEST) );
+							GL_CHECK(gl__Scissor(viewScissorRect.m_x
 								, resolutionHeight-viewScissorRect.m_height-viewScissorRect.m_y
 								, viewScissorRect.m_width
 								, viewScissorRect.m_height
@@ -6684,16 +7377,16 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						}
 						else
 						{
-							GL_CHECK(glDisable(GL_SCISSOR_TEST) );
+							GL_CHECK(gl__Disable(GL_SCISSOR_TEST) );
 						}
 					}
 					else
 					{
 						Rect scissorRect;
-						scissorRect.setIntersect(viewScissorRect, _render->m_frameCache.m_rectCache.m_cache[scissor]);
+						scissorRect.setIntersect(viewScissorRect, _render->m_frameCache.m_rectCache.m_cache[scissorState]);
 
-						GL_CHECK(glEnable(GL_SCISSOR_TEST) );
-						GL_CHECK(glScissor(scissorRect.m_x
+						GL_CHECK(gl__Enable(GL_SCISSOR_TEST) );
+						GL_CHECK(gl__Scissor(scissorRect.m_x
 							, resolutionHeight-scissorRect.m_height-scissorRect.m_y
 							, scissorRect.m_width
 							, scissorRect.m_height
@@ -6705,7 +7398,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 				{
 					if (0 != newStencil)
 					{
-						GL_CHECK(glEnable(GL_STENCIL_TEST) );
+						GL_CHECK(gl__Enable(GL_STENCIL_TEST) );
 
 						uint32_t bstencil = unpackStencil(1, newStencil);
 						uint8_t frontAndBack = bstencil != BGFX_STENCIL_NONE && bstencil != unpackStencil(0, newStencil);
@@ -6728,7 +7421,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 								GLint ref = (stencil&BGFX_STENCIL_FUNC_REF_MASK)>>BGFX_STENCIL_FUNC_REF_SHIFT;
 								GLint mask = (stencil&BGFX_STENCIL_FUNC_RMASK_MASK)>>BGFX_STENCIL_FUNC_RMASK_SHIFT;
 								uint32_t func = (stencil&BGFX_STENCIL_TEST_MASK)>>BGFX_STENCIL_TEST_SHIFT;
-								GL_CHECK(glStencilFuncSeparate(face, s_cmpFunc[func], ref, mask) );
+								GL_CHECK(gl__StencilFuncSeparate(face, s_cmpFunc[func], ref, mask) );
 							}
 
 							if ( (BGFX_STENCIL_OP_FAIL_S_MASK|BGFX_STENCIL_OP_FAIL_Z_MASK|BGFX_STENCIL_OP_PASS_Z_MASK) & changed)
@@ -6736,13 +7429,13 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 								uint32_t sfail = (stencil&BGFX_STENCIL_OP_FAIL_S_MASK)>>BGFX_STENCIL_OP_FAIL_S_SHIFT;
 								uint32_t zfail = (stencil&BGFX_STENCIL_OP_FAIL_Z_MASK)>>BGFX_STENCIL_OP_FAIL_Z_SHIFT;
 								uint32_t zpass = (stencil&BGFX_STENCIL_OP_PASS_Z_MASK)>>BGFX_STENCIL_OP_PASS_Z_SHIFT;
-								GL_CHECK(glStencilOpSeparate(face, s_stencilOp[sfail], s_stencilOp[zfail], s_stencilOp[zpass]) );
+								GL_CHECK(gl__StencilOpSeparate(face, s_stencilOp[sfail], s_stencilOp[zfail], s_stencilOp[zpass]) );
 							}
 						}
 					}
 					else
 					{
-						GL_CHECK(glDisable(GL_STENCIL_TEST) );
+						GL_CHECK(gl__Disable(GL_STENCIL_TEST) );
 					}
 				}
 
@@ -6766,23 +7459,23 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					{
 						if (BGFX_STATE_CULL_CCW & newFlags)
 						{
-							GL_CHECK(glEnable(GL_CULL_FACE) );
-							GL_CHECK(glCullFace(GL_BACK) );
+							GL_CHECK(gl__Enable(GL_CULL_FACE) );
+							GL_CHECK(gl__CullFace(GL_BACK) );
 						}
 						else if (BGFX_STATE_CULL_CW & newFlags)
 						{
-							GL_CHECK(glEnable(GL_CULL_FACE) );
-							GL_CHECK(glCullFace(GL_FRONT) );
+							GL_CHECK(gl__Enable(GL_CULL_FACE) );
+							GL_CHECK(gl__CullFace(GL_FRONT) );
 						}
 						else
 						{
-							GL_CHECK(glDisable(GL_CULL_FACE) );
+							GL_CHECK(gl__Disable(GL_CULL_FACE) );
 						}
 					}
 
 					if (BGFX_STATE_WRITE_Z & changedFlags)
 					{
-						GL_CHECK(glDepthMask(!!(BGFX_STATE_WRITE_Z & newFlags) ) );
+						GL_CHECK(gl__DepthMask(!!(BGFX_STATE_WRITE_Z & newFlags) ) );
 					}
 
 					if (BGFX_STATE_DEPTH_TEST_MASK & changedFlags)
@@ -6791,19 +7484,19 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 						if (0 != func)
 						{
-							GL_CHECK(glEnable(GL_DEPTH_TEST) );
-							GL_CHECK(glDepthFunc(s_cmpFunc[func]) );
+							GL_CHECK(gl__Enable(GL_DEPTH_TEST) );
+							GL_CHECK(gl__DepthFunc(s_cmpFunc[func]) );
 						}
 						else
 						{
 							if (BGFX_STATE_WRITE_Z & newFlags)
 							{
-								GL_CHECK(glEnable(GL_DEPTH_TEST) );
-								GL_CHECK(glDepthFunc(GL_ALWAYS) );
+								GL_CHECK(gl__Enable(GL_DEPTH_TEST) );
+								GL_CHECK(gl__DepthFunc(GL_ALWAYS) );
 							}
 							else
 							{
-								GL_CHECK(glDisable(GL_DEPTH_TEST) );
+								GL_CHECK(gl__Disable(GL_DEPTH_TEST) );
 							}
 						}
 					}
@@ -6818,23 +7511,23 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 					{
 						if ( (BGFX_STATE_PT_POINTS|BGFX_STATE_POINT_SIZE_MASK) & changedFlags)
 						{
-							float pointSize = (float)(bx::uint32_max(1, (newFlags&BGFX_STATE_POINT_SIZE_MASK)>>BGFX_STATE_POINT_SIZE_SHIFT) );
-							GL_CHECK(glPointSize(pointSize) );
+							float _pointSize = (float)(bx::uint32_max(1, (newFlags&BGFX_STATE_POINT_SIZE_MASK)>>BGFX_STATE_POINT_SIZE_SHIFT) );
+							GL_CHECK(gl__PointSize(_pointSize) );
 						}
 
 						if (BGFX_STATE_MSAA & changedFlags)
 						{
 							GL_CHECK(BGFX_STATE_MSAA & newFlags
-								? glEnable(GL_MULTISAMPLE)
-								: glDisable(GL_MULTISAMPLE)
+								? gl__Enable(GL_MULTISAMPLE)
+								: gl__Disable(GL_MULTISAMPLE)
 								);
 						}
 
 						if (BGFX_STATE_LINEAA & changedFlags)
 						{
 							GL_CHECK(BGFX_STATE_LINEAA & newFlags
-								? glEnable(GL_LINE_SMOOTH)
-								: glDisable(GL_LINE_SMOOTH)
+								? gl__Enable(GL_LINE_SMOOTH)
+								: gl__Disable(GL_LINE_SMOOTH)
 								);
 						}
 
@@ -6842,8 +7535,8 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						&&  BGFX_STATE_CONSERVATIVE_RASTER & changedFlags)
 						{
 							GL_CHECK(BGFX_STATE_CONSERVATIVE_RASTER & newFlags
-								? glEnable(GL_CONSERVATIVE_RASTERIZATION_NV)
-								: glDisable(GL_CONSERVATIVE_RASTERIZATION_NV)
+								? gl__Enable(GL_CONSERVATIVE_RASTERIZATION_NV)
+								: gl__Disable(GL_CONSERVATIVE_RASTERIZATION_NV)
 								);
 						}
 					}
@@ -6854,7 +7547,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						const GLboolean gg = !!(newFlags&BGFX_STATE_WRITE_G);
 						const GLboolean bb = !!(newFlags&BGFX_STATE_WRITE_B);
 						const GLboolean aa = !!(newFlags&BGFX_STATE_WRITE_A);
-						GL_CHECK(glColorMask(rr, gg, bb, aa) );
+						GL_CHECK(gl__ColorMask(rr, gg, bb, aa) );
 					}
 
 					if ( ( (0
@@ -6869,11 +7562,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 						{
 							if (BGFX_STATE_BLEND_ALPHA_TO_COVERAGE & newFlags)
 							{
-								GL_CHECK(glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE) );
+								GL_CHECK(gl__Enable(GL_SAMPLE_ALPHA_TO_COVERAGE) );
 							}
 							else
 							{
-								GL_CHECK(glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE) );
+								GL_CHECK(gl__Disable(GL_SAMPLE_ALPHA_TO_COVERAGE) );
 							}
 						}
 
@@ -6906,13 +7599,13 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 							{
 								if (enabled)
 								{
-									GL_CHECK(glEnable(GL_BLEND) );
-									GL_CHECK(glBlendFuncSeparate(s_blendFactor[srcRGB].m_src
+									GL_CHECK(gl__Enable(GL_BLEND) );
+									GL_CHECK(gl__BlendFuncSeparate(s_blendFactor[srcRGB].m_src
 										, s_blendFactor[dstRGB].m_dst
 										, s_blendFactor[srcA].m_src
 										, s_blendFactor[dstA].m_dst
 										) );
-									GL_CHECK(glBlendEquationSeparate(s_blendEquation[equRGB], s_blendEquation[equA]) );
+									GL_CHECK(gl__BlendEquationSeparate(s_blendEquation[equRGB], s_blendEquation[equA]) );
 
 									if ( (s_blendFactor[srcRGB].m_factor || s_blendFactor[dstRGB].m_factor)
 									&&  blendFactor != draw.m_rgba)
@@ -6928,28 +7621,28 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 								}
 								else
 								{
-									GL_CHECK(glDisable(GL_BLEND) );
+									GL_CHECK(gl__Disable(GL_BLEND) );
 								}
 							}
 							else
 							{
 								if (enabled)
 								{
-									GL_CHECK(glEnablei(GL_BLEND, 0) );
-									GL_CHECK(glBlendFuncSeparatei(0
+									GL_CHECK(gl__Enablei(GL_BLEND, 0) );
+									GL_CHECK(gl__BlendFuncSeparatei(0
 										, s_blendFactor[srcRGB].m_src
 										, s_blendFactor[dstRGB].m_dst
 										, s_blendFactor[srcA].m_src
 										, s_blendFactor[dstA].m_dst
 										) );
-									GL_CHECK(glBlendEquationSeparatei(0
+									GL_CHECK(gl__BlendEquationSeparatei(0
 										, s_blendEquation[equRGB]
 										, s_blendEquation[equA]
 										) );
 								}
 								else
 								{
-									GL_CHECK(glDisablei(GL_BLEND, 0) );
+									GL_CHECK(gl__Disablei(GL_BLEND, 0) );
 								}
 
 								for (uint32_t ii = 1, rgba = draw.m_rgba; ii < numRt; ++ii, rgba >>= 11)
@@ -6959,20 +7652,20 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 										const uint32_t src      = (rgba   )&0xf;
 										const uint32_t dst      = (rgba>>4)&0xf;
 										const uint32_t equation = (rgba>>8)&0x7;
-										GL_CHECK(glEnablei(GL_BLEND, ii) );
-										GL_CHECK(glBlendFunci(ii, s_blendFactor[src].m_src, s_blendFactor[dst].m_dst) );
-										GL_CHECK(glBlendEquationi(ii, s_blendEquation[equation]) );
+										GL_CHECK(gl__Enablei(GL_BLEND, ii) );
+										GL_CHECK(gl__BlendFunci(ii, s_blendFactor[src].m_src, s_blendFactor[dst].m_dst) );
+										GL_CHECK(gl__BlendEquationi(ii, s_blendEquation[equation]) );
 									}
 									else
 									{
-										GL_CHECK(glDisablei(GL_BLEND, ii) );
+										GL_CHECK(gl__Disablei(GL_BLEND, ii) );
 									}
 								}
 							}
 						}
 						else
 						{
-							GL_CHECK(glDisable(GL_BLEND) );
+							GL_CHECK(gl__Disable(GL_BLEND) );
 						}
 
 						blendFactor = draw.m_rgba;
@@ -7107,11 +7800,11 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 							if (kInvalidHandle != handle)
 							{
 								IndexBufferGL& ib = m_indexBuffers[handle];
-								GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.m_id) );
+								GL_CHECK(gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.m_id) );
 							}
 							else
 							{
-								GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
+								GL_CHECK(gl__BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
 							}
 						}
 
@@ -7159,7 +7852,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 										const VertexBufferGL& vb = m_vertexBuffers[draw.m_stream[idx].m_handle.idx];
 										uint16_t decl = !isValid(vb.m_decl) ? draw.m_stream[idx].m_decl.idx : vb.m_decl.idx;
-										GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
+										GL_CHECK(gl__BindBuffer(GL_ARRAY_BUFFER, vb.m_id) );
 										program.bindAttributes(m_vertexDecls[decl], draw.m_stream[idx].m_startVertex);
 									}
 								}
@@ -7168,7 +7861,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 								if (isValid(draw.m_instanceDataBuffer) )
 								{
-									GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffers[draw.m_instanceDataBuffer.idx].m_id) );
+									GL_CHECK(gl__BindBuffer(GL_ARRAY_BUFFER, m_vertexBuffers[draw.m_instanceDataBuffer.idx].m_id) );
 									program.bindInstanceData(draw.m_instanceDataStride, draw.m_instanceDataOffset);
 								}
 							}
@@ -7213,7 +7906,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 							if (currentState.m_indirectBuffer.idx != draw.m_indirectBuffer.idx)
 							{
 								currentState.m_indirectBuffer = draw.m_indirectBuffer;
-								GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vb.m_id) );
+								GL_CHECK(gl__BindBuffer(GL_DRAW_INDIRECT_BUFFER, vb.m_id) );
 							}
 
 							if (isValid(draw.m_indexBuffer) )
@@ -7257,7 +7950,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 							if (isValid(currentState.m_indirectBuffer) )
 							{
 								currentState.m_indirectBuffer.idx = kInvalidHandle;
-								GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0) );
+								GL_CHECK(gl__BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0) );
 							}
 
 							if (isValid(draw.m_indexBuffer) )
@@ -7343,7 +8036,7 @@ BX_TRACE("%d, %d, %d, %s", _array, _srgb, _mipAutogen, getName(_format) );
 
 			if (m_vaoSupport)
 			{
-				GL_CHECK(glBindVertexArray(m_vao) );
+				GL_CHECK(gl__BindVertexArray(m_vao) );
 			}
 
 			if (0 < _render->m_numRenderItems)

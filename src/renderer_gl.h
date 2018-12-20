@@ -1054,7 +1054,7 @@ namespace bgfx { namespace gl
 
 #define _GL_CHECK(_check, _call) \
 				BX_MACRO_BLOCK_BEGIN \
-					/*BX_TRACE(#_call);*/ \
+					/*BX_TRACE(#_call);*/\
 					_call; \
 					GLenum gl_err = glGetError(); \
 					_check(0 == gl_err, #_call "; GL error 0x%x: %s", gl_err, glEnumName(gl_err) ); \
@@ -1132,42 +1132,8 @@ namespace bgfx { namespace gl
 
 	struct IndexBufferGL
 	{
-		void create(uint32_t _size, void* _data, uint16_t _flags)
-		{
-			m_size  = _size;
-			m_flags = _flags;
-
-			GL_CHECK(glGenBuffers(1, &m_id) );
-			BX_CHECK(0 != m_id, "Failed to generate buffer id.");
-			GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id) );
-			GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER
-				, _size
-				, _data
-				, (NULL==_data) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW
-				) );
-			GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
-		}
-
-		void update(uint32_t _offset, uint32_t _size, void* _data, bool _discard = false)
-		{
-			BX_CHECK(0 != m_id, "Updating invalid index buffer.");
-
-			if (_discard)
-			{
-				// orphan buffer...
-				destroy();
-				create(m_size, NULL, m_flags);
-			}
-
-			GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id) );
-			GL_CHECK(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER
-				, _offset
-				, _size
-				, _data
-				) );
-			GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
-		}
-
+		void create(uint32_t _size, void* _data, uint16_t _flags);
+		void update(uint32_t _offset, uint32_t _size, void* _data, bool _discard = false);
 		void destroy();
 
 		GLuint m_id;
@@ -1177,45 +1143,8 @@ namespace bgfx { namespace gl
 
 	struct VertexBufferGL
 	{
-		void create(uint32_t _size, void* _data, VertexDeclHandle _declHandle, uint16_t _flags)
-		{
-			m_size = _size;
-			m_decl = _declHandle;
-			const bool drawIndirect = 0 != (_flags & BGFX_BUFFER_DRAW_INDIRECT);
-
-			m_target = drawIndirect ? GL_DRAW_INDIRECT_BUFFER : GL_ARRAY_BUFFER;
-
-			GL_CHECK(glGenBuffers(1, &m_id) );
-			BX_CHECK(0 != m_id, "Failed to generate buffer id.");
-			GL_CHECK(glBindBuffer(m_target, m_id) );
-			GL_CHECK(glBufferData(m_target
-				, _size
-				, _data
-				, (NULL==_data) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW
-				) );
-			GL_CHECK(glBindBuffer(m_target, 0) );
-		}
-
-		void update(uint32_t _offset, uint32_t _size, void* _data, bool _discard = false)
-		{
-			BX_CHECK(0 != m_id, "Updating invalid vertex buffer.");
-
-			if (_discard)
-			{
-				// orphan buffer...
-				destroy();
-				create(m_size, NULL, m_decl, 0);
-			}
-
-			GL_CHECK(glBindBuffer(m_target, m_id) );
-			GL_CHECK(glBufferSubData(m_target
-				, _offset
-				, _size
-				, _data
-				) );
-			GL_CHECK(glBindBuffer(m_target, 0) );
-		}
-
+		void create(uint32_t _size, void* _data, VertexDeclHandle _declHandle, uint16_t _flags);
+		void update(uint32_t _offset, uint32_t _size, void* _data, bool _discard = false);
 		void destroy();
 
 		GLuint m_id;
@@ -1338,18 +1267,7 @@ namespace bgfx { namespace gl
 
 		void bindAttributes(const VertexDecl& _vertexDecl, uint32_t _baseVertex = 0);
 
-		void bindAttributesEnd()
-		{
-			for (uint32_t ii = 0, iiEnd = m_usedCount; ii < iiEnd; ++ii)
-			{
-				if (Attrib::Count != m_unboundUsedAttrib[ii])
-				{
-					Attrib::Enum attr = Attrib::Enum(m_unboundUsedAttrib[ii]);
-					GLint loc = m_attributes[attr];
-					GL_CHECK(glDisableVertexAttribArray(loc) );
-				}
-			}
-		}
+		void bindAttributesEnd();
 
 		void unbindAttributes();
 
