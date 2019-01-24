@@ -13,6 +13,8 @@ HunterGate(
 
 project(bgfx VERSION 1.0.0)
 
+option(BGFX_CONFIG_DEBUG "Build bgfx with graphic debugging feature enabled" OFF)
+option(BGFX_CONFIG_PROFILER "Build bgfx with profiling feature enabled" OFF)
 option(BGFX_BUILD_TOOLS "Build bgfx tools." ON)
 option(BGFX_BUILD_EXAMPLES "Build bgfx examples." ON)
 
@@ -52,10 +54,17 @@ target_include_directories(bgfx
     3rdparty/khronos
     )
 
-target_compile_definitions(bgfx PUBLIC
-    $<$<CONFIG:Debug>:BGFX_CONFIG_DEBUG=1>
-    $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
-    )
+if(BGFX_CONFIG_DEBUG)
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_DEBUG=1)
+endif()
+
+if(BGFX_CONFIG_PROFILER)
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_PROFILER=1)
+endif()
+
+if (MSVC)
+    target_compile_definitions(bgfx PUBLIC _CRT_SECURE_NO_WARNINGS)
+endif()
 
 target_link_libraries(bgfx PUBLIC bkaradzic::bx bkaradzic::bimg)
 
