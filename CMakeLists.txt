@@ -545,9 +545,6 @@ endif()
 
 if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
 
-    hunter_add_package(SDL2)
-    find_package(SDL2 CONFIG REQUIRED)
-
     add_library(example-common
         3rdparty/dear-imgui/imgui.cpp
         3rdparty/dear-imgui/imgui_demo.cpp
@@ -580,9 +577,9 @@ if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
         examples/common/nanovg/nanovg_bgfx.cpp
         examples/common/ps/particle_system.cpp
         )
-    target_compile_definitions(example-common PUBLIC ENTRY_CONFIG_USE_SDL=1 __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
+    target_compile_definitions(example-common PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(example-common PUBLIC include 3rdparty)
-    target_link_libraries(example-common PUBLIC bkaradzic::bx bkaradzic::bimg SDL2::SDL2 SDL2::SDL2main)
+    target_link_libraries(example-common PUBLIC bkaradzic::bx bkaradzic::bimg )
 
 endif()
 
