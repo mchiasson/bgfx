@@ -1,10 +1,9 @@
 hunter_config(bx
-    URL https://github.com/YOU-i-Labs/bx/archive/v1.0.0-p0.tar.gz
-    SHA1 a9aa1a49c8ef6c87ab9aa989852806330e074fb2
+    URL https://github.com/YOU-i-Labs/bx/archive/v1.0.0-youi-1.tar.gz
+    SHA1 1dcecc9347d3216c0103ddbc821c29453be6f0ce
 )
 
 hunter_config(bimg
-    URL https://github.com/YOU-i-Labs/bimg/archive/v1.0.0-p0.tar.gz
-    SHA1 a65f311bc0b6aae36c558f49d765a8a6b63cca8c
+    URL https://github.com/YOU-i-Labs/bimg/archive/v1.0.0-youi-1.tar.gz
+    SHA1 7a075e4d4aa075ea921967a4da26567517bcae4c
 )
-
