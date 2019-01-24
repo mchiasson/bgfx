@@ -322,6 +322,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/ccp_pass.cpp
         3rdparty/spirv-tools/source/opt/cfg.cpp
         3rdparty/spirv-tools/source/opt/cfg_cleanup_pass.cpp
+        3rdparty/spirv-tools/source/opt/code_sink.cpp
         3rdparty/spirv-tools/source/opt/combine_access_chains.cpp
         3rdparty/spirv-tools/source/opt/common_uniform_elim_pass.cpp
         3rdparty/spirv-tools/source/opt/compact_ids_pass.cpp
