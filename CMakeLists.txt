@@ -327,6 +327,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/aggressive_dead_code_elim_pass.cpp
         3rdparty/spirv-tools/source/opt/basic_block.cpp
         3rdparty/spirv-tools/source/opt/block_merge_pass.cpp
+        3rdparty/spirv-tools/source/opt/block_merge_util.cpp
         3rdparty/spirv-tools/source/opt/build_module.cpp
         3rdparty/spirv-tools/source/opt/ccp_pass.cpp
         3rdparty/spirv-tools/source/opt/cfg.cpp
@@ -348,6 +349,8 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/dominator_tree.cpp
         3rdparty/spirv-tools/source/opt/eliminate_dead_constant_pass.cpp
         3rdparty/spirv-tools/source/opt/eliminate_dead_functions_pass.cpp
+        3rdparty/spirv-tools/source/opt/eliminate_dead_functions_util.cpp
+        3rdparty/spirv-tools/source/opt/eliminate_dead_members_pass.cpp
         3rdparty/spirv-tools/source/opt/feature_manager.cpp
         3rdparty/spirv-tools/source/opt/flatten_decoration_pass.cpp
         3rdparty/spirv-tools/source/opt/fold.cpp
@@ -415,6 +418,25 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/workaround1209.cpp
         3rdparty/spirv-tools/source/parsed_operand.cpp
         3rdparty/spirv-tools/source/print.cpp
+        3rdparty/spirv-tools/source/reduce/change_operand_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/change_operand_to_undef_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/merge_blocks_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/merge_blocks_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/operand_to_const_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/operand_to_dominating_id_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/operand_to_undef_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/pch_source_reduce.cpp
+        3rdparty/spirv-tools/source/reduce/reducer.cpp
+        3rdparty/spirv-tools/source/reduce/reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/reduction_pass.cpp
+        3rdparty/spirv-tools/source/reduce/reduction_util.cpp
+        3rdparty/spirv-tools/source/reduce/remove_function_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/remove_function_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/remove_instruction_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/remove_opname_instruction_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/remove_unreferenced_instruction_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/structured_loop_to_selection_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/structured_loop_to_selection_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/software_version.cpp
         3rdparty/spirv-tools/source/spirv_endian.cpp
         3rdparty/spirv-tools/source/spirv_optimizer_options.cpp
