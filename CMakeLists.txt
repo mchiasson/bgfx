@@ -575,7 +575,7 @@ if (BGFX_BUILD_TOOLS)
 
 endif()
 
-if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
+if (BGFX_BUILD_EXAMPLES)
 
     add_library(example-common
         3rdparty/dear-imgui/imgui.cpp
@@ -613,20 +613,15 @@ if (BGFX_BUILD_TOOLS OR BGFX_BUILD_EXAMPLES)
     target_include_directories(example-common PUBLIC include 3rdparty)
     target_link_libraries(example-common PUBLIC bkaradzic::bx bkaradzic::bimg )
 
-endif()
-
-if (BGFX_BUILD_TOOLS)
-    #####################
-    # BGFX Texture Viewer
-    #####################
-    add_executable(texturev tools/texturev/texturev.cpp)
-    target_compile_definitions(texturev PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
-    target_include_directories(texturev PRIVATE examples/common)
-    target_link_libraries(texturev PRIVATE example-common bkaradzic::bimg_decode bkaradzic::bimg bgfx bkaradzic::bx)
-
-endif()
-
-if (BGFX_BUILD_EXAMPLES)
+    if (BGFX_BUILD_TOOLS)
+        #####################
+        # BGFX Texture Viewer
+        #####################
+        add_executable(texturev tools/texturev/texturev.cpp)
+        target_compile_definitions(texturev PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
+        target_include_directories(texturev PRIVATE examples/common)
+        target_link_libraries(texturev PRIVATE example-common bkaradzic::bimg_decode bkaradzic::bimg bgfx bkaradzic::bx)
+    endif()
 
     add_library(example-glue examples/common/example-glue.cpp)
     target_compile_definitions(example-glue PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
