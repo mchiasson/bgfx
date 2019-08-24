@@ -144,6 +144,7 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
         3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
         3rdparty/glslang/glslang/MachineIndependent/reflection.cpp
+        3rdparty/glslang/glslang/glslang.js.cpp
         3rdparty/glslang/hlsl/hlslAttributes.cpp
         3rdparty/glslang/hlsl/hlslGrammar.cpp
         3rdparty/glslang/hlsl/hlslOpMap.cpp
@@ -319,7 +320,6 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/enum_string_mapping.cpp
         3rdparty/spirv-tools/source/ext_inst.cpp
         3rdparty/spirv-tools/source/extensions.cpp
-        3rdparty/spirv-tools/source/id_descriptor.cpp
         3rdparty/spirv-tools/source/libspirv.cpp
         3rdparty/spirv-tools/source/name_mapper.cpp
         3rdparty/spirv-tools/source/opcode.cpp
@@ -334,7 +334,6 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/cfg_cleanup_pass.cpp
         3rdparty/spirv-tools/source/opt/code_sink.cpp
         3rdparty/spirv-tools/source/opt/combine_access_chains.cpp
-        3rdparty/spirv-tools/source/opt/common_uniform_elim_pass.cpp
         3rdparty/spirv-tools/source/opt/compact_ids_pass.cpp
         3rdparty/spirv-tools/source/opt/composite.cpp
         3rdparty/spirv-tools/source/opt/const_folding_rules.cpp
@@ -343,8 +342,10 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/dead_branch_elim_pass.cpp
         3rdparty/spirv-tools/source/opt/dead_insert_elim_pass.cpp
         3rdparty/spirv-tools/source/opt/dead_variable_elimination.cpp
+        3rdparty/spirv-tools/source/opt/decompose_initialized_variables_pass.cpp
         3rdparty/spirv-tools/source/opt/decoration_manager.cpp
         3rdparty/spirv-tools/source/opt/def_use_manager.cpp
+        3rdparty/spirv-tools/source/opt/desc_sroa.cpp
         3rdparty/spirv-tools/source/opt/dominator_analysis.cpp
         3rdparty/spirv-tools/source/opt/dominator_tree.cpp
         3rdparty/spirv-tools/source/opt/eliminate_dead_constant_pass.cpp
@@ -352,22 +353,27 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/eliminate_dead_functions_util.cpp
         3rdparty/spirv-tools/source/opt/eliminate_dead_members_pass.cpp
         3rdparty/spirv-tools/source/opt/feature_manager.cpp
+        3rdparty/spirv-tools/source/opt/fix_storage_class.cpp
         3rdparty/spirv-tools/source/opt/flatten_decoration_pass.cpp
         3rdparty/spirv-tools/source/opt/fold.cpp
         3rdparty/spirv-tools/source/opt/fold_spec_constant_op_and_composite_pass.cpp
         3rdparty/spirv-tools/source/opt/folding_rules.cpp
         3rdparty/spirv-tools/source/opt/freeze_spec_constant_value_pass.cpp
         3rdparty/spirv-tools/source/opt/function.cpp
+        3rdparty/spirv-tools/source/opt/generate_webgpu_initializers_pass.cpp
+        3rdparty/spirv-tools/source/opt/graphics_robust_access_pass.cpp
         3rdparty/spirv-tools/source/opt/if_conversion.cpp
         3rdparty/spirv-tools/source/opt/inline_exhaustive_pass.cpp
         3rdparty/spirv-tools/source/opt/inline_opaque_pass.cpp
         3rdparty/spirv-tools/source/opt/inline_pass.cpp
         3rdparty/spirv-tools/source/opt/inst_bindless_check_pass.cpp
+        3rdparty/spirv-tools/source/opt/inst_buff_addr_check_pass.cpp
         3rdparty/spirv-tools/source/opt/instruction.cpp
         3rdparty/spirv-tools/source/opt/instruction_list.cpp
         3rdparty/spirv-tools/source/opt/instrument_pass.cpp
         3rdparty/spirv-tools/source/opt/ir_context.cpp
         3rdparty/spirv-tools/source/opt/ir_loader.cpp
+        3rdparty/spirv-tools/source/opt/legalize_vector_shuffle_pass.cpp
         3rdparty/spirv-tools/source/opt/licm_pass.cpp
         3rdparty/spirv-tools/source/opt/local_access_chain_convert_pass.cpp
         3rdparty/spirv-tools/source/opt/local_redundancy_elimination.cpp
@@ -404,8 +410,10 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/scalar_replacement_pass.cpp
         3rdparty/spirv-tools/source/opt/set_spec_constant_default_value_pass.cpp
         3rdparty/spirv-tools/source/opt/simplification_pass.cpp
+        3rdparty/spirv-tools/source/opt/split_invalid_unreachable_pass.cpp
         3rdparty/spirv-tools/source/opt/ssa_rewrite_pass.cpp
         3rdparty/spirv-tools/source/opt/strength_reduction_pass.cpp
+        3rdparty/spirv-tools/source/opt/strip_atomic_counter_memory_pass.cpp
         3rdparty/spirv-tools/source/opt/strip_debug_info_pass.cpp
         3rdparty/spirv-tools/source/opt/strip_reflect_info_pass.cpp
         3rdparty/spirv-tools/source/opt/struct_cfg_analysis.cpp
@@ -416,10 +424,13 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/opt/value_number_table.cpp
         3rdparty/spirv-tools/source/opt/vector_dce.cpp
         3rdparty/spirv-tools/source/opt/workaround1209.cpp
+        3rdparty/spirv-tools/source/opt/wrap_opkill.cpp
         3rdparty/spirv-tools/source/parsed_operand.cpp
         3rdparty/spirv-tools/source/print.cpp
         3rdparty/spirv-tools/source/reduce/change_operand_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/change_operand_to_undef_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/conditional_branch_to_simple_conditional_branch_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/conditional_branch_to_simple_conditional_branch_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/merge_blocks_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/merge_blocks_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/reduce/operand_to_const_reduction_opportunity_finder.cpp
@@ -430,11 +441,18 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/reduce/reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/reduction_pass.cpp
         3rdparty/spirv-tools/source/reduce/reduction_util.cpp
+        3rdparty/spirv-tools/source/reduce/remove_block_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/remove_block_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/reduce/remove_function_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/remove_function_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/reduce/remove_instruction_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/remove_opname_instruction_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/remove_relaxed_precision_decoration_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/remove_selection_reduction_opportunity.cpp
+        3rdparty/spirv-tools/source/reduce/remove_selection_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/reduce/remove_unreferenced_instruction_reduction_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/simple_conditional_branch_to_branch_opportunity_finder.cpp
+        3rdparty/spirv-tools/source/reduce/simple_conditional_branch_to_branch_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/structured_loop_to_selection_reduction_opportunity.cpp
         3rdparty/spirv-tools/source/reduce/structured_loop_to_selection_reduction_opportunity_finder.cpp
         3rdparty/spirv-tools/source/software_version.cpp
@@ -482,10 +500,12 @@ if (BGFX_BUILD_TOOLS)
         3rdparty/spirv-tools/source/val/validate_logicals.cpp
         3rdparty/spirv-tools/source/val/validate_memory.cpp
         3rdparty/spirv-tools/source/val/validate_memory_semantics.cpp
+        3rdparty/spirv-tools/source/val/validate_misc.cpp
         3rdparty/spirv-tools/source/val/validate_mode_setting.cpp
         3rdparty/spirv-tools/source/val/validate_non_uniform.cpp
         3rdparty/spirv-tools/source/val/validate_primitives.cpp
         3rdparty/spirv-tools/source/val/validate_scopes.cpp
+        3rdparty/spirv-tools/source/val/validate_small_type_uses.cpp
         3rdparty/spirv-tools/source/val/validate_type.cpp
         3rdparty/spirv-tools/source/val/validation_state.cpp
         )
@@ -531,9 +551,20 @@ if (BGFX_BUILD_TOOLS)
     ########################
 
     add_executable(geometryc
-        3rdparty/forsyth-too/forsythtriangleorderoptimizer.cpp
-        3rdparty/ib-compress/indexbuffercompression.cpp
-        3rdparty/ib-compress/indexbufferdecompression.cpp
+        3rdparty/meshoptimizer/src/allocator.cpp
+        3rdparty/meshoptimizer/src/clusterizer.cpp
+        3rdparty/meshoptimizer/src/indexcodec.cpp
+        3rdparty/meshoptimizer/src/indexgenerator.cpp
+        3rdparty/meshoptimizer/src/overdrawanalyzer.cpp
+        3rdparty/meshoptimizer/src/overdrawoptimizer.cpp
+        3rdparty/meshoptimizer/src/simplifier.cpp
+        3rdparty/meshoptimizer/src/spatialorder.cpp
+        3rdparty/meshoptimizer/src/stripifier.cpp
+        3rdparty/meshoptimizer/src/vcacheanalyzer.cpp
+        3rdparty/meshoptimizer/src/vcacheoptimizer.cpp
+        3rdparty/meshoptimizer/src/vertexcodec.cpp
+        3rdparty/meshoptimizer/src/vfetchanalyzer.cpp
+        3rdparty/meshoptimizer/src/vfetchoptimizer.cpp
         examples/common/bounds.cpp
         src/vertexdecl.cpp
         tools/geometryc/geometryc.cpp
@@ -552,6 +583,7 @@ if (BGFX_BUILD_TOOLS)
         tools/shaderc/shaderc.cpp
         tools/shaderc/shaderc_glsl.cpp
         tools/shaderc/shaderc_hlsl.cpp
+        tools/shaderc/shaderc_metal.cpp
         tools/shaderc/shaderc_pssl.cpp
         tools/shaderc/shaderc_spirv.cpp
         )
@@ -582,14 +614,27 @@ if (BGFX_BUILD_EXAMPLES)
         3rdparty/dear-imgui/imgui_demo.cpp
         3rdparty/dear-imgui/imgui_draw.cpp
         3rdparty/dear-imgui/imgui_widgets.cpp
-        3rdparty/ib-compress/indexbuffercompression.cpp
-        3rdparty/ib-compress/indexbufferdecompression.cpp
+        3rdparty/meshoptimizer/src/allocator.cpp
+        3rdparty/meshoptimizer/src/clusterizer.cpp
+        3rdparty/meshoptimizer/src/indexcodec.cpp
+        3rdparty/meshoptimizer/src/indexgenerator.cpp
+        3rdparty/meshoptimizer/src/overdrawanalyzer.cpp
+        3rdparty/meshoptimizer/src/overdrawoptimizer.cpp
+        3rdparty/meshoptimizer/src/simplifier.cpp
+        3rdparty/meshoptimizer/src/spatialorder.cpp
+        3rdparty/meshoptimizer/src/stripifier.cpp
+        3rdparty/meshoptimizer/src/vcacheanalyzer.cpp
+        3rdparty/meshoptimizer/src/vcacheoptimizer.cpp
+        3rdparty/meshoptimizer/src/vertexcodec.cpp
+        3rdparty/meshoptimizer/src/vfetchanalyzer.cpp
+        3rdparty/meshoptimizer/src/vfetchoptimizer.cpp
         examples/common/bgfx_utils.cpp
         examples/common/bounds.cpp
         examples/common/camera.cpp
         examples/common/cube_atlas.cpp
         examples/common/debugdraw/debugdraw.cpp
         examples/common/entry/cmd.cpp
+        examples/common/entry/dialog.cpp
         examples/common/entry/entry.cpp
         examples/common/entry/entry_android.cpp
         examples/common/entry/entry_asmjs.cpp
@@ -604,7 +649,6 @@ if (BGFX_BUILD_EXAMPLES)
         examples/common/font/text_metrics.cpp
         examples/common/font/utf8.cpp
         examples/common/imgui/imgui.cpp
-        examples/common/imgui/scintilla.cpp
         examples/common/nanovg/nanovg.cpp
         examples/common/nanovg/nanovg_bgfx.cpp
         examples/common/ps/particle_system.cpp
@@ -626,7 +670,7 @@ if (BGFX_BUILD_EXAMPLES)
     add_library(example-glue examples/common/example-glue.cpp)
     target_compile_definitions(example-glue PUBLIC __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(example-glue PUBLIC include 3rdparty)
-    target_link_libraries(example-glue PUBLIC bkaradzic::bx bkaradzic::bimg)
+    target_link_libraries(example-glue PUBLIC example-common bkaradzic::bx bkaradzic::bimg)
 
     add_executable(examples
         examples/00-helloworld/helloworld.cpp
@@ -669,10 +713,14 @@ if (BGFX_BUILD_EXAMPLES)
         examples/36-sky/sky.cpp
         examples/37-gpudrivenrendering/gpudrivenrendering.cpp
         examples/38-bloom/bloom.cpp
+        examples/39-assao/assao.cpp
+        examples/40-svt/svt.cpp
+        examples/40-svt/vt.cpp
+        examples/41-tess/tess.cpp
         )
     target_compile_definitions(examples PRIVATE __STDC_LIMIT_MACROS __STDC_FORMAT_MACROS __STDC_CONSTANT_MACROS $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
     target_include_directories(examples PRIVATE include 3rdparty examples/common)
-    target_link_libraries(examples PRIVATE example-common example-glue bgfx bkaradzic::bimg_decode bkaradzic::bimg bkaradzic::bx)
+    target_link_libraries(examples PRIVATE example-glue bgfx bkaradzic::bimg_decode bkaradzic::bimg bkaradzic::bx)
 
     file(GLOB_RECURSE RUNTIMES RELATIVE ${PROJECT_SOURCE_DIR}/examples/runtime examples/runtime/*)
     foreach(RUNTIME IN LISTS RUNTIMES)
