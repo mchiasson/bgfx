@@ -14,6 +14,7 @@ HunterGate(
 project(bgfx VERSION 1.0.0)
 
 option(BGFX_CONFIG_DEBUG "Build bgfx with graphic debugging feature enabled" OFF)
+option(BGFX_CONFIG_FORCE_SINGLE_THREAD "Build bgfx in single thread mode (sets BGFX_CONFIG_MULTITHREADED=0)." OFF)
 option(BGFX_CONFIG_PROFILER "Build bgfx with profiling feature enabled" OFF)
 option(BGFX_BUILD_TOOLS "Build bgfx tools." ON)
 option(BGFX_BUILD_EXAMPLES "Build bgfx examples." ON)
@@ -56,6 +57,10 @@ target_include_directories(bgfx
 
 if(BGFX_CONFIG_DEBUG)
     target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_DEBUG=1)
+endif()
+
+if (BGFX_CONFIG_FORCE_SINGLE_THREAD)
+    target_compile_definitions(bgfx PUBLIC BGFX_CONFIG_MULTITHREADED=0)
 endif()
 
 if(BGFX_CONFIG_PROFILER)
