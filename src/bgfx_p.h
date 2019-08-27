@@ -2839,6 +2839,7 @@ constexpr uint64_t kSortKeyComputeProgramMask  = uint64_t(BGFX_CONFIG_MAX_PROGRA
 			, m_renderNoop(NULL)
 			, m_rendererInitialized(false)
 			, m_exit(false)
+			, m_flipEnabled(true)
 			, m_flipAfterRender(false)
 			, m_singleThreaded(false)
 		{
@@ -2887,6 +2888,7 @@ constexpr uint64_t kSortKeyComputeProgramMask  = uint64_t(BGFX_CONFIG_MAX_PROGRA
 				;
 			g_platformDataChangedSinceReset = false;
 
+			m_flipEnabled = !(_flags & BGFX_RESET_NO_FLIP);
 			m_flipAfterRender = !!(_flags & BGFX_RESET_FLIP_AFTER_RENDER);
 
 			for (uint32_t ii = 0; ii < BGFX_CONFIG_MAX_VIEWS; ++ii)
@@ -4974,6 +4976,7 @@ constexpr uint64_t kSortKeyComputeProgramMask  = uint64_t(BGFX_CONFIG_MAX_PROGRA
 
 		bool m_rendererInitialized;
 		bool m_exit;
+		bool m_flipEnabled;
 		bool m_flipAfterRender;
 		bool m_singleThreaded;
 		bool m_flipped;

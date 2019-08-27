@@ -2284,7 +2284,7 @@ namespace bgfx
 		NSAutoreleasePoolScope pool;
 #endif // BX_PLATFORM_OSX
 
-		if (!m_flipAfterRender)
+		if (m_flipEnabled && !m_flipAfterRender)
 		{
 			BGFX_PROFILER_SCOPE("bgfx/flip", 0xff2040ff);
 			flip();
@@ -2311,7 +2311,7 @@ namespace bgfx
 
 			renderSemPost();
 
-			if (m_flipAfterRender)
+			if (m_flipEnabled && m_flipAfterRender)
 			{
 				BGFX_PROFILER_SCOPE("bgfx/flip", 0xff2040ff);
 				flip();
