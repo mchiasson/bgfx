@@ -297,7 +297,7 @@ namespace bgfx { namespace gl
 
 	void GlContext::makeCurrent(SwapChainGL* _swapChain)
 	{
-		if (m_current != _swapChain)
+		//if (m_current != _swapChain)
 		{
 			m_current = _swapChain;
 
